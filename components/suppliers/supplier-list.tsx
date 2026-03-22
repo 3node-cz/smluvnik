@@ -4,9 +4,17 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Contract } from '@/lib/types/database'
 import { addSupplierNote, deleteSupplierNote } from '@/lib/actions/suppliers'
+import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@/components/ui/select'
 import {
   Building2,
   FileText,
@@ -77,7 +85,7 @@ export function SupplierList({ contracts, initialNotes }: SupplierListProps) {
         router.refresh()
       })
     } catch {
-      alert('Chyba pri ukladani poznamky.')
+      toast.error('Chyba při ukládání poznámky.')
     } finally {
       setSaving(null)
     }
@@ -90,7 +98,7 @@ export function SupplierList({ contracts, initialNotes }: SupplierListProps) {
         router.refresh()
       })
     } catch {
-      alert('Chyba pri mazani poznamky.')
+      toast.error('Chyba při mazání poznámky.')
     }
   }
 
@@ -129,18 +137,20 @@ export function SupplierList({ contracts, initialNotes }: SupplierListProps) {
             className="pl-9 h-10"
           />
         </div>
-        <div className="relative">
-          <ArrowUpDown className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none z-10" />
-          <select
-            value={sort}
-            onChange={(e) => setSort(e.target.value as SortOption)}
-            className="h-10 pl-8 pr-4 rounded-lg text-sm border border-input bg-transparent hover:bg-muted focus:outline-none focus:ring-3 focus:ring-ring/50 focus:border-ring appearance-none cursor-pointer"
-          >
-            <option value="amount_desc">Nejvyssi castka</option>
-            <option value="contracts_desc">Nejvice smluv</option>
-            <option value="name_asc">Abecedne A-Z</option>
-          </select>
-        </div>
+        <Select
+          value={sort}
+          onValueChange={(value) => setSort(value as SortOption)}
+        >
+          <SelectTrigger className="h-10 gap-2">
+            <ArrowUpDown className="w-3.5 h-3.5 text-muted-foreground" />
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="amount_desc">Nejvyšší částka</SelectItem>
+            <SelectItem value="contracts_desc">Nejvíce smluv</SelectItem>
+            <SelectItem value="name_asc">Abecedně A-Z</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {suppliers.length === 0 ? (

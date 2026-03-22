@@ -10,6 +10,13 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@/components/ui/select'
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -333,8 +340,6 @@ export function AdminPanel() {
 
   const aiUntilActive = editData.ai_until && new Date(editData.ai_until) > new Date()
 
-  const selectClass = 'h-8 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50'
-
   return (
     <div className="space-y-8">
 
@@ -351,26 +356,34 @@ export function AdminPanel() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium mb-1 block">Plán</label>
-                <select
+                <Select
                   value={editData.plan || 'free'}
-                  onChange={e => setEditData(prev => ({ ...prev, plan: e.target.value }))}
-                  className={selectClass + ' w-full'}
+                  onValueChange={(value) => setEditData(prev => ({ ...prev, plan: value as string }))}
                 >
-                  <option value="free">Free / Start</option>
-                  <option value="pro">Pro / Jistota</option>
-                  <option value="business">Business</option>
-                </select>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="free">Free / Start</SelectItem>
+                    <SelectItem value="pro">Pro / Jistota</SelectItem>
+                    <SelectItem value="business">Business</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <label className="text-sm font-medium mb-1 block">Role</label>
-                <select
+                <Select
                   value={editData.role || 'user'}
-                  onChange={e => setEditData(prev => ({ ...prev, role: e.target.value }))}
-                  className={selectClass + ' w-full'}
+                  onValueChange={(value) => setEditData(prev => ({ ...prev, role: value as string }))}
                 >
-                  <option value="user">User</option>
-                  <option value="admin">Admin</option>
-                </select>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="user">User</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
@@ -378,14 +391,18 @@ export function AdminPanel() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium mb-1 block">Typ předplatného</label>
-                <select
+                <Select
                   value={editData.subscription_type || 'monthly'}
-                  onChange={e => setEditData(prev => ({ ...prev, subscription_type: e.target.value }))}
-                  className={selectClass + ' w-full'}
+                  onValueChange={(value) => setEditData(prev => ({ ...prev, subscription_type: value as string }))}
                 >
-                  <option value="monthly">Měsíční</option>
-                  <option value="yearly">Roční</option>
-                </select>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="monthly">Měsíční</SelectItem>
+                    <SelectItem value="yearly">Roční</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <label className="text-sm font-medium mb-1 block">Vyprší</label>
@@ -777,21 +794,31 @@ export function AdminPanel() {
               onChange={e => setSearch(e.target.value)}
               className="flex-1 min-w-[180px]"
             />
-            <select value={filterPlan} onChange={e => setFilterPlan(e.target.value)} className={selectClass}>
-              <option value="all">Všechny plány</option>
-              <option value="free">Free / Start</option>
-              <option value="pro">Pro / Jistota</option>
-              <option value="business">Business</option>
-            </select>
-            <select value={sortBy} onChange={e => setSortBy(e.target.value)} className={selectClass}>
-              <option value="created_at_desc">Registrace (nejnovější)</option>
-              <option value="created_at_asc">Registrace (nejstarší)</option>
-              <option value="contracts_desc">Smlouvy (nejvíce)</option>
-              <option value="contracts_asc">Smlouvy (nejméně)</option>
-              <option value="storage_desc">Úložiště (nejvíce)</option>
-              <option value="storage_asc">Úložiště (nejméně)</option>
-              <option value="email_asc">Email (A-Z)</option>
-            </select>
+            <Select value={filterPlan} onValueChange={(value) => setFilterPlan(value as string)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Všechny plány</SelectItem>
+                <SelectItem value="free">Free / Start</SelectItem>
+                <SelectItem value="pro">Pro / Jistota</SelectItem>
+                <SelectItem value="business">Business</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={sortBy} onValueChange={(value) => setSortBy(value as string)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="created_at_desc">Registrace (nejnovější)</SelectItem>
+                <SelectItem value="created_at_asc">Registrace (nejstarší)</SelectItem>
+                <SelectItem value="contracts_desc">Smlouvy (nejvíce)</SelectItem>
+                <SelectItem value="contracts_asc">Smlouvy (nejméně)</SelectItem>
+                <SelectItem value="storage_desc">Úložiště (nejvíce)</SelectItem>
+                <SelectItem value="storage_asc">Úložiště (nejméně)</SelectItem>
+                <SelectItem value="email_asc">Email (A-Z)</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardHeader>
         <CardContent className="p-0">

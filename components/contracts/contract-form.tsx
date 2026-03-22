@@ -3,11 +3,14 @@
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Camera, Sparkles, Loader, AlertCircle, FileText, File, X } from 'lucide-react'
+import { toast } from 'sonner'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
+import { Textarea } from '@/components/ui/textarea'
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
 import { createClient } from '@/lib/supabase/client'
 import { addContract, updateContract } from '@/lib/actions/contracts'
 import { useApp } from '@/lib/context'
@@ -88,11 +91,11 @@ export function ContractForm({ open, onOpenChange, initial, onSaved }: ContractF
 
   const handleFileSelected = async (file: File) => {
     if (!ALLOWED_TYPES.includes(file.type)) {
-      alert('Nepodporovaný formát. Povoleny jsou: PDF, JPG, PNG, WEBP, HEIC, DOC, DOCX')
+      toast.error('Nepodporovaný formát. Povoleny jsou: PDF, JPG, PNG, WEBP, HEIC, DOC, DOCX')
       return
     }
     if (isFreePlan && file.size > remainingStorage) {
-      alert(`Nedostatek místa v úložišti. Zbývá vám ${formatFileSize(Math.max(0, remainingStorage))} z 15 MB.`)
+      toast.error(`Nedostatek místa v úložišti. Zbývá vám ${formatFileSize(Math.max(0, remainingStorage))} z 15 MB.`)
       return
     }
     setSelectedFile(file)
@@ -153,7 +156,7 @@ export function ContractForm({ open, onOpenChange, initial, onSaved }: ContractF
     e.preventDefault()
     if (!formData.provider?.trim()) return
     if (formData.category === 'vlastni' && !formData.custom_category?.trim()) {
-      alert('Vyplňte název vlastní kategorie.')
+      toast.error('Vyplňte název vlastní kategorie.')
       return
     }
     setLoading(true)
@@ -196,7 +199,7 @@ export function ContractForm({ open, onOpenChange, initial, onSaved }: ContractF
       onOpenChange(false)
     } catch (err) {
       console.error(err)
-      alert('Chyba při ukládání smlouvy. Zkuste to znovu.')
+      toast.error('Chyba při ukládání smlouvy. Zkuste to znovu.')
     } finally {
       setLoading(false)
     }
@@ -243,24 +246,26 @@ export function ContractForm({ open, onOpenChange, initial, onSaved }: ContractF
 
             {!selectedFile ? (
               <div className="flex gap-3">
-                <button
+                <Button
                   type="button"
+                  variant="outline"
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex-1 flex flex-col items-center gap-2 p-4 border-2 border-dashed border-navy-300 rounded-xl hover:border-teal-500 hover:bg-teal-50 transition-all text-navy-500 hover:text-teal-700"
+                  className="flex-1 flex flex-col items-center gap-2 p-4 h-auto border-2 border-dashed border-navy-300 rounded-xl hover:border-teal-500 hover:bg-teal-50 transition-all text-navy-500 hover:text-teal-700"
                 >
                   <FileText className="w-6 h-6" />
                   <span className="text-xs font-medium">Nahrát soubor</span>
                   <span className="text-xs text-navy-400">PDF, JPG, PNG, DOC</span>
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
+                  variant="outline"
                   onClick={() => cameraInputRef.current?.click()}
-                  className="flex-1 flex flex-col items-center gap-2 p-4 border-2 border-dashed border-navy-300 rounded-xl hover:border-teal-500 hover:bg-teal-50 transition-all text-navy-500 hover:text-teal-700"
+                  className="flex-1 flex flex-col items-center gap-2 p-4 h-auto border-2 border-dashed border-navy-300 rounded-xl hover:border-teal-500 hover:bg-teal-50 transition-all text-navy-500 hover:text-teal-700"
                 >
                   <Camera className="w-6 h-6" />
                   <span className="text-xs font-medium">Vyfotit</span>
                   <span className="text-xs text-navy-400">Fotoaparát</span>
-                </button>
+                </Button>
               </div>
             ) : (
               <div className="flex items-center gap-3 bg-white p-3 rounded-xl border border-navy-200">
@@ -325,16 +330,21 @@ export function ContractForm({ open, onOpenChange, initial, onSaved }: ContractF
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2 sm:col-span-1">
                 <Label className="mb-1.5">Kategorie *</Label>
-                <select
-                  value={formData.category}
-                  onChange={e => update('category', e.target.value as ContractCategory)}
-                  className="flex h-8 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-                  required
+                <Select
+                  value={formData.category as string}
+                  onValueChange={(value) => update('category', value as ContractCategory)}
                 >
-                  {CONTRACT_CATEGORIES.map(cat => (
-                    <option key={cat.value} value={cat.value}>{cat.icon} {cat.label}</option>
-                  ))}
-                </select>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CONTRACT_CATEGORIES.map(cat => (
+                      <SelectItem key={cat.value} value={cat.value}>
+                        {cat.icon} {cat.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 {isVlastni && (
                   <Input
                     type="text"
@@ -423,10 +433,10 @@ export function ContractForm({ open, onOpenChange, initial, onSaved }: ContractF
 
             <div>
               <Label className="mb-1.5">Poznámky</Label>
-              <textarea
+              <Textarea
                 value={formData.notes || ''}
                 onChange={e => update('notes', e.target.value)}
-                className="flex min-h-[80px] w-full rounded-lg border border-input bg-transparent px-2.5 py-2 text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                className="min-h-[80px]"
                 rows={3}
                 placeholder="Další důležité informace..."
               />

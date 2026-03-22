@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { Search, ArrowUpDown, Download, LayoutGrid, List, FileText, Calendar, RefreshCw, Lock, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu'
 import { useApp } from '@/lib/context'
 import { deleteContract } from '@/lib/actions/contracts'
@@ -206,7 +208,7 @@ export function ContractList({ contracts, plan }: ContractListProps) {
   }
 
   const handleDelete = (id: string) => {
-    if (!confirm('Opravdu chcete smazat tuto smlouvu?')) return
+    if (!window.confirm('Opravdu chcete smazat tuto smlouvu?')) return
     startTransition(async () => {
       await deleteContract(id)
       router.refresh()
@@ -247,19 +249,23 @@ export function ContractList({ contracts, plan }: ContractListProps) {
         </div>
 
         {/* View mode toggle */}
-        <div className="flex border border-navy-200 rounded-xl overflow-hidden bg-white">
-          <button
+        <div className="flex gap-0.5 border border-navy-200 rounded-xl overflow-hidden bg-white p-0.5">
+          <Button
+            variant={viewMode === 'grid' ? 'default' : 'ghost'}
+            size="icon"
             onClick={() => setViewMode('grid')}
-            className={`px-3 py-2 transition ${viewMode === 'grid' ? 'bg-navy-800 text-white' : 'text-navy-500 hover:bg-navy-50'}`}
+            className={viewMode === 'grid' ? 'bg-navy-800 text-white hover:bg-navy-700' : 'text-navy-500'}
           >
             <LayoutGrid className="w-4 h-4" />
-          </button>
-          <button
+          </Button>
+          <Button
+            variant={viewMode === 'list' ? 'default' : 'ghost'}
+            size="icon"
             onClick={() => setViewMode('list')}
-            className={`px-3 py-2 transition ${viewMode === 'list' ? 'bg-navy-800 text-white' : 'text-navy-500 hover:bg-navy-50'}`}
+            className={viewMode === 'list' ? 'bg-navy-800 text-white hover:bg-navy-700' : 'text-navy-500'}
           >
             <List className="w-4 h-4" />
-          </button>
+          </Button>
         </div>
 
         {/* Export */}
@@ -280,53 +286,58 @@ export function ContractList({ contracts, plan }: ContractListProps) {
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
-          <div className="relative group">
-            <Button
-              disabled
-              variant="outline"
-              className="border-navy-200 bg-navy-50 text-navy-300 cursor-not-allowed h-auto py-3"
-            >
-              <Lock className="w-4 h-4" />
-              Export
-            </Button>
-            <div className="absolute right-0 top-full mt-1 bg-navy-900 text-white text-xs px-3 py-2 rounded-xl shadow-lg z-20 whitespace-nowrap opacity-0 group-hover:opacity-100 transition pointer-events-none">
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  disabled
+                  variant="outline"
+                  className="border-navy-200 bg-navy-50 text-navy-300 cursor-not-allowed h-auto py-3"
+                >
+                  <Lock className="w-4 h-4" />
+                  Export
+                </Button>
+              }
+            />
+            <TooltipContent side="bottom">
               Export je dostupný v plánu Jistota
-            </div>
-          </div>
+            </TooltipContent>
+          </Tooltip>
         )}
       </div>
 
       {/* Sort + Category filter */}
       <div className="flex flex-wrap items-center gap-2">
-        <div className="relative">
-          <ArrowUpDown className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-navy-400 pointer-events-none" />
-          <select
-            value={sort}
-            onChange={e => setSort(e.target.value as SortOption)}
-            className="pl-8 pr-8 py-1.5 rounded-full text-xs font-semibold border border-navy-200 bg-white text-navy-600 hover:bg-navy-50 focus:outline-none focus:ring-2 focus:ring-teal-500 appearance-none cursor-pointer"
-          >
+        <Select value={sort} onValueChange={(value) => setSort(value as SortOption)}>
+          <SelectTrigger size="sm" className="rounded-full text-xs font-semibold border-navy-200 bg-white text-navy-600 hover:bg-navy-50 gap-1.5">
+            <ArrowUpDown className="w-3.5 h-3.5 text-navy-400" />
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
             {SORT_OPTIONS.map(o => (
-              <option key={o.value} value={o.value}>{o.label}</option>
+              <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
             ))}
-          </select>
-        </div>
+          </SelectContent>
+        </Select>
 
         <div className="w-px h-6 bg-navy-200" />
 
         {categoriesInUse.map(cat => {
           const catDef = CONTRACT_CATEGORIES.find(c => c.value === cat)
           return (
-            <button
+            <Button
               key={cat}
+              variant={activeCategory === cat ? 'default' : 'outline'}
+              size="sm"
               onClick={() => setActiveCategory(cat)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+              className={`rounded-full text-xs font-semibold ${
                 activeCategory === cat
-                  ? 'bg-navy-800 text-white shadow-sm'
-                  : 'bg-white text-navy-600 border border-navy-200 hover:bg-navy-50'
+                  ? 'bg-navy-800 text-white shadow-sm hover:bg-navy-700'
+                  : 'bg-white text-navy-600 border-navy-200 hover:bg-navy-50'
               }`}
             >
               {cat === 'vse' ? 'Vše' : `${catDef?.icon || ''} ${catDef?.label || cat}`}
-            </button>
+            </Button>
           )
         })}
       </div>

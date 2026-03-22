@@ -6,6 +6,8 @@ import { createClient } from '@/lib/supabase/client'
 import { Mail, Lock, User, Eye, EyeOff, ArrowLeft, CheckCircle, Shield } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import {
   Dialog,
   DialogContent,
@@ -236,8 +238,8 @@ export function LoginForm() {
           <p className={/[^A-Za-z0-9]/.test(password) ? 'text-teal-600' : ''}>&#10003; speci\u00e1ln\u00ed znak (!@#$%)</p>
         </div>
 
-        {error && <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded-xl text-sm mb-4">{error}</div>}
-        {successMsg && <div className="bg-teal-50 border border-teal-200 text-teal-700 p-3 rounded-xl text-sm mb-4">{successMsg}</div>}
+        {error && <Alert variant="destructive" className="mb-4"><AlertDescription>{error}</AlertDescription></Alert>}
+        {successMsg && <Alert className="mb-4"><AlertDescription>{successMsg}</AlertDescription></Alert>}
 
         <form onSubmit={handleNewPassword} className="space-y-4">
           <div className="relative">
@@ -250,9 +252,9 @@ export function LoginForm() {
               className="pl-10 pr-10 py-3 h-auto rounded-xl border-navy-200 text-navy-900 placeholder:text-navy-400 focus-visible:ring-teal-500 focus-visible:border-transparent"
               required
             />
-            <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-3.5 text-navy-400 hover:text-navy-700">
+            <Button type="button" variant="ghost" size="icon" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-2 text-navy-400 hover:text-navy-700">
               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            </button>
+            </Button>
           </div>
           <Button type="submit" disabled={loading} className="w-full justify-center py-3 h-auto text-base bg-teal-600 hover:bg-teal-700 text-white rounded-xl disabled:opacity-60">
             {loading ? <span className="flex items-center gap-2"><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Ukl\u00e1d\u00e1m...</span> : 'Ulo\u017eit nov\u00e9 heslo'}
@@ -273,7 +275,7 @@ export function LoginForm() {
         <h2 className="text-2xl font-bold text-navy-900 mb-1 text-center">Dvoufaktorov\u00e9 ov\u011b\u0159en\u00ed</h2>
         <p className="text-navy-500 text-sm mb-6 text-center">Zadejte 6m\u00edstn\u00fd k\u00f3d z va\u0161\u00ed autentiza\u010dn\u00ed aplikace</p>
 
-        {error && <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded-xl text-sm mb-4">{error}</div>}
+        {error && <Alert variant="destructive" className="mb-4"><AlertDescription>{error}</AlertDescription></Alert>}
 
         <form onSubmit={handleMfaVerify} className="space-y-4">
           <div className="relative">
@@ -293,9 +295,9 @@ export function LoginForm() {
             {loading ? <span className="flex items-center gap-2"><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Ov\u011b\u0159uji...</span> : 'Ov\u011b\u0159it'}
           </Button>
         </form>
-        <button onClick={() => { setMode('login'); setMfaCode(''); setError('') }} className="w-full text-center text-sm text-navy-400 hover:text-navy-700 mt-4 transition">
+        <Button variant="ghost" onClick={() => { setMode('login'); setMfaCode(''); setError('') }} className="w-full text-center text-sm text-navy-400 hover:text-navy-700 mt-4">
           <ArrowLeft className="w-3 h-3 inline mr-1" /> Zp\u011bt na p\u0159ihl\u00e1\u0161en\u00ed
-        </button>
+        </Button>
       </div>
     )
   }
@@ -349,9 +351,9 @@ export function LoginForm() {
 
       <div className="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md">
         {mode !== 'login' && (
-          <button onClick={() => { setMode('login'); setError(''); setSuccessMsg('') }} className="flex items-center gap-1 text-navy-500 text-sm mb-6 hover:text-navy-800 transition">
+          <Button variant="ghost" onClick={() => { setMode('login'); setError(''); setSuccessMsg('') }} className="flex items-center gap-1 text-navy-500 text-sm mb-6 hover:text-navy-800 px-0">
             <ArrowLeft className="w-4 h-4" /> Zp\u011bt
-          </button>
+          </Button>
         )}
 
         <h2 className="text-2xl font-bold text-navy-900 mb-1">
@@ -372,8 +374,8 @@ export function LoginForm() {
           </div>
         )}
 
-        {error && <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded-xl text-sm mb-4">{error}</div>}
-        {successMsg && <div className="bg-teal-50 border border-teal-200 text-teal-700 p-3 rounded-xl text-sm mb-4">{successMsg}</div>}
+        {error && <Alert variant="destructive" className="mb-4"><AlertDescription>{error}</AlertDescription></Alert>}
+        {successMsg && <Alert className="mb-4"><AlertDescription>{successMsg}</AlertDescription></Alert>}
 
         <form onSubmit={mode === 'login' ? handleLogin : mode === 'register' ? handleRegister : handleReset} className="space-y-4">
           {mode === 'register' && (
@@ -411,27 +413,26 @@ export function LoginForm() {
                 className="pl-10 pr-10 py-3 h-auto rounded-xl border-navy-200 text-navy-900 placeholder:text-navy-400 focus-visible:ring-teal-500 focus-visible:border-transparent"
                 required
               />
-              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-3.5 text-navy-400 hover:text-navy-700">
+              <Button type="button" variant="ghost" size="icon" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-2 text-navy-400 hover:text-navy-700">
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
+              </Button>
             </div>
           )}
           {mode === 'login' && (
             <div className="text-right">
-              <button type="button" onClick={() => { setMode('reset'); setError('') }} className="text-teal-600 text-sm hover:underline">
+              <Button type="button" variant="link" onClick={() => { setMode('reset'); setError('') }} className="text-teal-600 text-sm h-auto p-0">
                 Zapomn\u011bli jste heslo?
-              </button>
+              </Button>
             </div>
           )}
 
           {mode === 'register' && (
-            <label className="flex items-start gap-3 cursor-pointer group">
-              <div className="relative mt-0.5 flex-shrink-0">
-                <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)} className="sr-only" />
-                <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${agreed ? 'bg-teal-500 border-teal-500' : 'border-navy-300 group-hover:border-teal-400'}`}>
-                  {agreed && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
-                </div>
-              </div>
+            <label className="flex items-start gap-3 cursor-pointer">
+              <Checkbox
+                checked={agreed}
+                onCheckedChange={(checked) => setAgreed(checked as boolean)}
+                className="mt-0.5"
+              />
               <span className="text-xs text-navy-600 leading-relaxed">
                 Souhlas\u00edm s{' '}
                 <button type="button" onClick={() => setShowTerms(true)} className="text-teal-600 hover:underline font-medium">podm\u00ednkami pou\u017eit\u00ed</button>
@@ -458,17 +459,17 @@ export function LoginForm() {
               <div className="border-t border-navy-200 w-full"></div>
               <span className="bg-white px-3 text-xs text-navy-400 absolute">nebo</span>
             </div>
-            <button type="button" onClick={handleGoogleLogin} disabled={loading} className="w-full flex items-center justify-center gap-3 border border-navy-200 rounded-xl py-3 text-sm text-navy-700 hover:bg-navy-50 transition disabled:opacity-60">
+            <Button type="button" variant="outline" className="w-full flex items-center justify-center gap-3 rounded-xl py-3 h-auto text-sm text-navy-700" onClick={handleGoogleLogin} disabled={loading}>
               <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
               P\u0159ihl\u00e1sit se p\u0159es Google
-            </button>
+            </Button>
           </div>
         )}
 
         {mode === 'login' && (
           <p className="text-center text-sm text-navy-500 mt-6">
             Nem\u00e1te \u00fa\u010det?{' '}
-            <button onClick={() => { setMode('register'); setError('') }} className="text-teal-600 font-semibold hover:underline">Zaregistrujte se</button>
+            <Button variant="link" onClick={() => { setMode('register'); setError('') }} className="text-teal-600 font-semibold h-auto p-0">Zaregistrujte se</Button>
           </p>
         )}
       </div>

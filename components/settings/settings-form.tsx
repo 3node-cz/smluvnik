@@ -15,11 +15,14 @@ import {
   Lock,
   Shield,
   QrCode,
+  AlertTriangle as AlertTriangleIcon,
+  CheckCircle as CheckCircleIcon,
 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -336,14 +339,16 @@ export function SettingsForm() {
           </p>
 
           {mfaError && (
-            <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded-xl text-sm">
-              {mfaError}
-            </div>
+            <Alert variant="destructive">
+              <AlertTriangleIcon className="w-4 h-4" />
+              <AlertDescription>{mfaError}</AlertDescription>
+            </Alert>
           )}
           {mfaSuccess && (
-            <div className="bg-teal-50 border border-teal-200 text-teal-700 p-3 rounded-xl text-sm">
-              {mfaSuccess}
-            </div>
+            <Alert>
+              <CheckCircleIcon className="w-4 h-4 text-teal-600" />
+              <AlertDescription className="text-teal-700">{mfaSuccess}</AlertDescription>
+            </Alert>
           )}
 
           {mfaStep === 'idle' && !mfaEnabled && (

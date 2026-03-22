@@ -1,6 +1,7 @@
 'use client'
 
 import { ShoppingCart, Sparkles, Package } from 'lucide-react'
+import { toast } from 'sonner'
 import { useApp } from '@/lib/context'
 import { Button } from '@/components/ui/button'
 
@@ -91,7 +92,7 @@ export function AddonSection() {
                 size="sm"
                 className="flex-shrink-0 bg-teal-600 hover:bg-teal-700 text-white"
                 onClick={() =>
-                  alert('Platba bude brzy dostupná přes Stripe.\n\nPro okamžitou aktivaci napište na info@smluvnik.cz')
+                  toast.info('Platba bude brzy dostupná přes Stripe. Pro okamžitou aktivaci napište na info@smluvnik.cz')
                 }
               >
                 Zakoupit
@@ -146,7 +147,7 @@ export function AddonSection() {
                 size="sm"
                 className="flex-shrink-0 bg-teal-600 hover:bg-teal-700 text-white"
                 onClick={() =>
-                  alert('Platba bude brzy dostupná přes Stripe.\n\nPro okamžitou aktivaci napište na info@smluvnik.cz')
+                  toast.info('Platba bude brzy dostupná přes Stripe. Pro okamžitou aktivaci napište na info@smluvnik.cz')
                 }
               >
                 Zakoupit

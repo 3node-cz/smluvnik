@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Trash2, Edit2, FileText, Phone, Mail, Calendar, RefreshCw, ChevronDown, ChevronUp, Download, Eye, X, Plus } from 'lucide-react'
+import { toast } from 'sonner'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -108,7 +109,7 @@ export function ContractCard({ contract, onEdit, onDelete }: ContractCardProps) 
 
   const handleDeleteDocument = async (docId: string, filePath: string) => {
     if (docId === 'original') return
-    if (!confirm('Smazat tento dokument?')) return
+    if (!window.confirm('Smazat tento dokument?')) return
     await deleteDocument(docId, filePath)
     setDocuments(prev => prev.filter(d => d.id !== docId))
     router.refresh()
@@ -143,7 +144,7 @@ export function ContractCard({ contract, onEdit, onDelete }: ContractCardProps) 
       })
       router.refresh()
     } catch (err) {
-      alert('Chyba při nahrávání dokumentu.')
+      toast.error('Chyba při nahrávání dokumentu.')
       console.error(err)
     } finally {
       setUploading(false)
@@ -211,10 +212,10 @@ export function ContractCard({ contract, onEdit, onDelete }: ContractCardProps) 
         </div>
       </div>
 
-      <button onClick={() => setExpanded(!expanded)} className="flex items-center gap-1 text-xs text-navy-400 hover:text-navy-700 mt-4 transition">
+      <Button variant="ghost" size="sm" onClick={() => setExpanded(!expanded)} className="flex items-center gap-1 text-xs text-navy-400 hover:text-navy-700 mt-4 px-2">
         {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
         {expanded ? 'Méně' : 'Více detailů'}
-      </button>
+      </Button>
 
       {expanded && (
         <div className="mt-4 pt-4 border-t border-navy-100 space-y-3">
@@ -250,10 +251,12 @@ export function ContractCard({ contract, onEdit, onDelete }: ContractCardProps) 
           <div className="pt-2">
             <div className="flex items-center justify-between mb-2">
               <h4 className="text-xs font-semibold text-navy-600 uppercase tracking-wide">Dokumenty</h4>
-              <button
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => uploadRef.current?.click()}
                 disabled={uploading}
-                className="flex items-center gap-1 text-xs text-teal-600 hover:text-teal-800 font-medium transition disabled:opacity-50"
+                className="text-xs text-teal-600 hover:text-teal-800 font-medium px-2"
               >
                 {uploading ? (
                   <span className="w-3 h-3 border-2 border-teal-600/30 border-t-teal-600 rounded-full animate-spin" />
@@ -261,7 +264,7 @@ export function ContractCard({ contract, onEdit, onDelete }: ContractCardProps) 
                   <Plus className="w-3.5 h-3.5" />
                 )}
                 {uploading ? 'Nahrávám...' : 'Přidat dokument'}
-              </button>
+              </Button>
               <input
                 ref={uploadRef}
                 type="file"
