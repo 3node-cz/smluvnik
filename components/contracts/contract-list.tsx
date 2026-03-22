@@ -12,6 +12,7 @@ import { useApp } from '@/lib/context'
 import { deleteContract } from '@/lib/actions/contracts'
 import { ContractCard } from '@/components/contracts/contract-card'
 import { ContractForm } from '@/components/contracts/contract-form'
+import { DashboardStats } from '@/components/dashboard/dashboard-stats'
 import type { Contract } from '@/lib/types/database'
 import { CONTRACT_CATEGORIES } from '@/lib/types/database'
 
@@ -239,6 +240,8 @@ export function ContractList({ contracts, plan, totalCount }: ContractListProps)
           Přidat smlouvu
         </Button>
       </div>
+
+      <DashboardStats contracts={contracts} />
 
       {/* Search + Export + View toggle */}
       <div className="flex gap-2">

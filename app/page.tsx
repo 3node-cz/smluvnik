@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { AppProvider } from '@/lib/context'
 import { Sidebar } from '@/components/shared/sidebar'
-import { DashboardStats } from '@/components/dashboard/dashboard-stats'
 import { ContractList } from '@/components/contracts/contract-list'
 import { LandingPage } from '@/components/landing/landing-page'
 import type { Contract } from '@/lib/types/database'
@@ -48,7 +47,6 @@ export default async function Home() {
         <main className="flex-1 lg:ml-64 pt-14 lg:pt-0">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
             <div className="space-y-8">
-              <DashboardStats contracts={typedContracts} />
               <ContractList contracts={typedContracts} plan={profile.plan || 'free'} totalCount={typedContracts.length} />
             </div>
           </div>
