@@ -63,9 +63,13 @@
   --color-navy-950: #0a1929;
 
   /* Custom teal color palette */
+  --color-teal-50: #e6fffa;
+  --color-teal-100: #b2f5ea;
+  --color-teal-200: #81e6d9;
   --color-teal-400: #38b2ac;
   --color-teal-500: #319795;
   --color-teal-600: #2c7a7b;
+  --color-teal-700: #285e61;
 
   /* Custom animations */
   --animate-fade-in: fadeIn 0.3s ease-out;
