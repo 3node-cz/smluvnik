@@ -244,36 +244,32 @@ export function ContractList({ contracts, plan, totalCount }: ContractListProps)
       <DashboardStats contracts={contracts} />
 
       {/* Search + Export + View toggle */}
-      <div className="flex items-stretch gap-2">
+      <div className="flex gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-navy-400" />
-          <Input
+          <Search className="absolute left-3.5 top-3.5 w-4 h-4 text-navy-400" />
+          <input
             type="text"
             placeholder="Hledat podle poskytovatele, čísla smlouvy..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 h-full border-navy-200 rounded-xl"
+            className="w-full pl-10 pr-4 py-3 border border-navy-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
           />
         </div>
 
         {/* View mode toggle */}
-        <div className="flex items-center gap-0.5 border border-navy-200 rounded-xl overflow-hidden bg-white px-1">
-          <Button
-            variant={viewMode === 'grid' ? 'default' : 'ghost'}
-            size="icon"
+        <div className="flex border border-navy-200 rounded-xl overflow-hidden bg-white">
+          <button
             onClick={() => setViewMode('grid')}
-            className={viewMode === 'grid' ? 'bg-navy-800 text-white hover:bg-navy-700' : 'text-navy-500'}
+            className={`px-3 py-2 transition ${viewMode === 'grid' ? 'bg-navy-800 text-white' : 'text-navy-500 hover:bg-navy-50'}`}
           >
             <LayoutGrid className="w-4 h-4" />
-          </Button>
-          <Button
-            variant={viewMode === 'list' ? 'default' : 'ghost'}
-            size="icon"
+          </button>
+          <button
             onClick={() => setViewMode('list')}
-            className={viewMode === 'list' ? 'bg-navy-800 text-white hover:bg-navy-700' : 'text-navy-500'}
+            className={`px-3 py-2 transition ${viewMode === 'list' ? 'bg-navy-800 text-white' : 'text-navy-500 hover:bg-navy-50'}`}
           >
             <List className="w-4 h-4" />
-          </Button>
+          </button>
         </div>
 
         {/* Export */}
@@ -281,10 +277,10 @@ export function ContractList({ contracts, plan, totalCount }: ContractListProps)
           <DropdownMenu>
             <DropdownMenuTrigger
               render={
-                <Button variant="outline" className="border-navy-200 text-navy-600 hover:bg-navy-50 h-full">
+                <button className="flex items-center gap-2 px-4 py-3 border border-navy-200 rounded-xl text-sm bg-white text-navy-600 hover:bg-navy-50 transition">
                   <Download className="w-4 h-4" />
                   Export
-                </Button>
+                </button>
               }
             />
             <DropdownMenuContent align="end">
@@ -297,14 +293,13 @@ export function ContractList({ contracts, plan, totalCount }: ContractListProps)
           <Tooltip>
             <TooltipTrigger
               render={
-                <Button
+                <button
                   disabled
-                  variant="outline"
-                  className="border-navy-200 bg-navy-50 text-navy-300 cursor-not-allowed h-full"
+                  className="flex items-center gap-2 px-4 py-3 border border-navy-200 rounded-xl text-sm bg-navy-50 text-navy-300 cursor-not-allowed"
                 >
                   <Lock className="w-4 h-4" />
                   Export
-                </Button>
+                </button>
               }
             />
             <TooltipContent side="bottom">
