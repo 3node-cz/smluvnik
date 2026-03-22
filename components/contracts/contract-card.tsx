@@ -49,14 +49,14 @@ export function ContractCard({ contract, onEdit, onDelete }: ContractCardProps) 
     : 'bg-navy-100 text-navy-500 border-navy-200'
 
   const statusText = isExpired
-    ? `Vyprsela pred ${Math.abs(daysLeft!)} dny`
+    ? `Vypršela před ${Math.abs(daysLeft!)} dny`
     : isExpiring
-    ? `Vyprsi za ${daysLeft} dni`
+    ? `Vyprší za ${daysLeft} dní`
     : expiresDate
-    ? `Platna do ${expiresDate.toLocaleDateString('cs-CZ')}`
-    : 'Bez omezeni'
+    ? `Platná do ${expiresDate.toLocaleDateString('cs-CZ')}`
+    : 'Bez omezení'
 
-  const statusLabel = isExpired ? 'Expirovana' : isExpiring ? 'Koncici' : expiresDate ? 'Aktivni' : 'Bez data'
+  const statusLabel = isExpired ? '● Expirovaná' : isExpiring ? '● Končící' : expiresDate ? '● Aktivní' : '● Bez data'
 
   const loadDocuments = async () => {
     setDocsLoading(true)
@@ -143,7 +143,7 @@ export function ContractCard({ contract, onEdit, onDelete }: ContractCardProps) 
       })
       router.refresh()
     } catch (err) {
-      alert('Chyba pri nahravani dokumentu.')
+      alert('Chyba při nahrávání dokumentu.')
       console.error(err)
     } finally {
       setUploading(false)
@@ -192,13 +192,13 @@ export function ContractCard({ contract, onEdit, onDelete }: ContractCardProps) 
             </Badge>
             {contract.monthly_payment && (
               <Badge variant="secondary" className="bg-navy-100 text-navy-700">
-                {contract.monthly_payment.toLocaleString('cs-CZ')} Kc/mesic
+                {contract.monthly_payment.toLocaleString('cs-CZ')} Kč/měsíc
               </Badge>
             )}
             {contract.auto_renewal && (
               <Badge variant="secondary" className="bg-blue-100 text-blue-700">
                 <RefreshCw className="w-3 h-3 mr-1" />
-                Auto-prodlouzeni
+                Auto-prodloužení
               </Badge>
             )}
             {contract.file_path && (
@@ -213,7 +213,7 @@ export function ContractCard({ contract, onEdit, onDelete }: ContractCardProps) 
 
       <button onClick={() => setExpanded(!expanded)} className="flex items-center gap-1 text-xs text-navy-400 hover:text-navy-700 mt-4 transition">
         {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-        {expanded ? 'Mene' : 'Vice detailu'}
+        {expanded ? 'Méně' : 'Více detailů'}
       </button>
 
       {expanded && (
@@ -221,7 +221,7 @@ export function ContractCard({ contract, onEdit, onDelete }: ContractCardProps) 
           {contract.contract_number && (
             <div className="flex items-center gap-2 text-sm text-navy-600">
               <FileText className="w-4 h-4 text-navy-400" />
-              C. smlouvy: <span className="font-medium">{contract.contract_number}</span>
+              Č. smlouvy: <span className="font-medium">{contract.contract_number}</span>
             </div>
           )}
           {contract.valid_from && (
@@ -260,7 +260,7 @@ export function ContractCard({ contract, onEdit, onDelete }: ContractCardProps) 
                 ) : (
                   <Plus className="w-3.5 h-3.5" />
                 )}
-                {uploading ? 'Nahravam...' : 'Pridat dokument'}
+                {uploading ? 'Nahrávám...' : 'Přidat dokument'}
               </button>
               <input
                 ref={uploadRef}
@@ -272,9 +272,9 @@ export function ContractCard({ contract, onEdit, onDelete }: ContractCardProps) 
             </div>
 
             {docsLoading ? (
-              <p className="text-xs text-navy-400">Nacitam...</p>
+              <p className="text-xs text-navy-400">Načítám...</p>
             ) : documents.length === 0 ? (
-              <p className="text-xs text-navy-400 italic">Zadne dokumenty</p>
+              <p className="text-xs text-navy-400 italic">Žádné dokumenty</p>
             ) : (
               <div className="space-y-2">
                 {documents.map(doc => (

@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { AppProvider } from '@/lib/context'
 import { Sidebar } from '@/components/shared/sidebar'
 import { DashboardStats } from '@/components/dashboard/dashboard-stats'
+import { ContractList } from '@/components/contracts/contract-list'
 import { LandingPage } from '@/components/landing/landing-page'
 import type { Contract } from '@/lib/types/database'
 
@@ -42,13 +43,7 @@ export default async function Home() {
                 <p className="text-navy-500 text-sm mt-1">{(contracts || []).length} smluv celkem</p>
               </div>
               <DashboardStats contracts={(contracts as Contract[]) || []} />
-              {/* ContractList will be added in Task 7 */}
-              {(contracts || []).length === 0 && (
-                <div className="bg-white rounded-2xl border border-navy-100 p-6 text-center py-20">
-                  <h3 className="text-xl font-bold text-navy-900 mb-2">Zatím žádné smlouvy</h3>
-                  <p className="text-navy-500 mb-8">Přidejte svou první smlouvu a začněte mít přehled</p>
-                </div>
-              )}
+              <ContractList contracts={(contracts as Contract[]) || []} plan={profile.plan || 'free'} />
             </div>
           </div>
         </main>
