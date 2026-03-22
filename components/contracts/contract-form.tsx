@@ -451,18 +451,18 @@ export function ContractForm({ open, onOpenChange, initial, onSaved }: ContractF
           </form>
         </div>
 
-        <DialogFooter className="mx-0 mb-0 rounded-b-xl border-t border-navy-100 px-6 py-4 bg-transparent">
-          <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1 sm:flex-none">
+        <div className="flex gap-3 px-6 py-4 border-t border-navy-100">
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1 justify-center">
             Zrušit
           </Button>
-          <Button type="submit" form="contract-form" disabled={loading} className="flex-1 sm:flex-none bg-navy-900 hover:bg-navy-800 text-white">
+          <Button type="submit" form="contract-form" disabled={loading} className="flex-1 justify-center bg-navy-900 hover:bg-navy-800 text-white">
             {loading ? (
               <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Ukládám...</>
             ) : (
               initial ? 'Uložit změny' : 'Přidat smlouvu'
             )}
           </Button>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   )
