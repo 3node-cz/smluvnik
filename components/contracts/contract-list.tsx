@@ -244,7 +244,7 @@ export function ContractList({ contracts, plan, totalCount }: ContractListProps)
       <DashboardStats contracts={contracts} />
 
       {/* Search + Export + View toggle */}
-      <div className="flex gap-2">
+      <div className="flex items-stretch gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-navy-400" />
           <Input
@@ -252,12 +252,12 @@ export function ContractList({ contracts, plan, totalCount }: ContractListProps)
             placeholder="Hledat podle poskytovatele, čísla smlouvy..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 h-auto border-navy-200 rounded-xl"
+            className="w-full pl-10 pr-4 h-full border-navy-200 rounded-xl"
           />
         </div>
 
         {/* View mode toggle */}
-        <div className="flex gap-0.5 border border-navy-200 rounded-xl overflow-hidden bg-white p-0.5">
+        <div className="flex items-center gap-0.5 border border-navy-200 rounded-xl overflow-hidden bg-white px-1">
           <Button
             variant={viewMode === 'grid' ? 'default' : 'ghost'}
             size="icon"
@@ -281,7 +281,7 @@ export function ContractList({ contracts, plan, totalCount }: ContractListProps)
           <DropdownMenu>
             <DropdownMenuTrigger
               render={
-                <Button variant="outline" className="border-navy-200 text-navy-600 hover:bg-navy-50 h-auto py-3">
+                <Button variant="outline" className="border-navy-200 text-navy-600 hover:bg-navy-50 h-full">
                   <Download className="w-4 h-4" />
                   Export
                 </Button>
@@ -300,7 +300,7 @@ export function ContractList({ contracts, plan, totalCount }: ContractListProps)
                 <Button
                   disabled
                   variant="outline"
-                  className="border-navy-200 bg-navy-50 text-navy-300 cursor-not-allowed h-auto py-3"
+                  className="border-navy-200 bg-navy-50 text-navy-300 cursor-not-allowed h-full"
                 >
                   <Lock className="w-4 h-4" />
                   Export
