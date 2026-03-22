@@ -1,6 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
+const VALID_CATEGORIES = [
+  'energie', 'plyn', 'internet', 'tv', 'mobilni_tarif',
+  'pojisteni_auto', 'pojisteni_domacnost', 'pojisteni_zivot', 'pojisteni_zdravi',
+  'hypoteka', 'spotrebitelsky_uver', 'leasing', 'najemni', 'prace',
+  'sluzby', 'dodavatelska', 'nda', 'kupni', 'darovaci', 'ostatni'
+] as const
+
+const responseSchema = {
+  type: 'object',
+  properties: {
+    provider: { type: 'string', nullable: true, description: 'Název dodavatele/poskytovatele' },
+    contract_number: { type: 'string', nullable: true, description: 'Číslo smlouvy' },
+    category: { type: 'string', enum: [...VALID_CATEGORIES], description: 'Kategorie smlouvy' },
+    monthly_payment: { type: 'number', nullable: true, description: 'Měsíční platba v CZK' },
+    unit_price_low: { type: 'number', nullable: true, description: 'Cena za MWh (energie/plyn)' },
+    fixed_fee: { type: 'number', nullable: true, description: 'Stálá platba (energie/plyn)' },
+    valid_from: { type: 'string', nullable: true, description: 'Datum začátku ve formátu YYYY-MM-DD' },
+    valid_until: { type: 'string', nullable: true, description: 'Datum konce ve formátu YYYY-MM-DD' },
+    contact_phone: { type: 'string', nullable: true, description: 'Telefon dodavatele' },
+    contact_email: { type: 'string', nullable: true, description: 'Email dodavatele' },
+    notes: { type: 'string', nullable: true, description: 'Tarif, produkt a další důležité info' },
+  },
+  required: ['provider', 'category'],
+}
+
 export async function POST(request: NextRequest) {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -22,13 +47,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'GOOGLE_AI_API_KEY not configured' }, { status: 500 })
   }
 
-  const prompt = `Jsi expert na analýzu smluv. Analyzuj přiložený dokument a extrahuj údaje do JSON.
+  const prompt = `Jsi expert na analýzu smluv. Analyzuj přiložený dokument a extrahuj údaje.
 
 OBECNÁ PRAVIDLA:
-1. Vrať POUZE validní JSON, žádný text před ani po, žádné markdown bloky
-2. Pokud údaj nenajdeš, použij null
-3. Čísla bez mezer a jednotek (např. 1500 ne "1 500 Kč")
-4. Datumy vždy ve formátu YYYY-MM-DD
+1. Pokud údaj nenajdeš, použij null
+2. Čísla bez mezer a jednotek (např. 1500 ne "1 500 Kč")
+3. Datumy vždy ve formátu YYYY-MM-DD
 
 POSKYTOVATEL:
 - Název firmy která poskytuje službu (dodavatel, pojišťovna, banka, operátor...)
@@ -88,24 +112,7 @@ SPECIÁLNĚ PRO PLYN (kategorie plyn):
 
 PRO OSTATNÍ KATEGORIE:
 - unit_price_low = null
-- fixed_fee = null
-
-Vrať tento JSON:
-{
-  "provider": "název dodavatele/poskytovatele",
-  "contract_number": "číslo smlouvy nebo null",
-  "category": "kategorie dle seznamu výše",
-  "monthly_payment": číslo nebo null,
-  "unit_price_low": číslo nebo null,
-  "fixed_fee": číslo nebo null,
-  "valid_from": "YYYY-MM-DD nebo null",
-  "valid_until": "YYYY-MM-DD nebo null",
-  "contact_phone": "telefon dodavatele nebo null",
-  "contact_email": "email dodavatele nebo null",
-  "notes": "tarif, produkt a další důležité info nebo null"
-}
-
-VRAŤ POUZE JSON. Žádný text, žádné vysvětlení, žádné markdown.`
+- fixed_fee = null`
 
   try {
     const response = await fetch(
@@ -122,9 +129,9 @@ VRAŤ POUZE JSON. Žádný text, žádné vysvětlení, žádné markdown.`
           }],
           generationConfig: {
             temperature: 0,
-            topP: 1,
             maxOutputTokens: 8192,
-            responseMimeType: 'application/json'
+            responseMimeType: 'application/json',
+            responseSchema,
           }
         })
       }
@@ -132,7 +139,6 @@ VRAŤ POUZE JSON. Žádný text, žádné vysvětlení, žádné markdown.`
 
     if (!response.ok) {
       const err = await response.text()
-      // Logovat neúspěch
       await supabase.from('ai_usage_log').insert({
         user_id: userId,
         success: false,
@@ -147,13 +153,31 @@ VRAŤ POUZE JSON. Žádný text, žádné vysvětlení, žádné markdown.`
     const textPart = parts.find((p: { text?: string; thought?: boolean }) => p.text && !p.thought)
     const text = textPart?.text || parts[parts.length - 1]?.text || '{}'
 
-    const clean = text.replace(/```json\n?|```\n?/g, '').trim()
-    const jsonMatch = clean.match(/\{[\s\S]*\}/)
-    const jsonStr = jsonMatch ? jsonMatch[0] : clean
-
     try {
-      const parsed = JSON.parse(jsonStr)
-      // Logovat úspěch
+      const parsed = JSON.parse(text)
+
+      // Validate category
+      if (parsed.category && !VALID_CATEGORIES.includes(parsed.category)) {
+        parsed.category = 'ostatni'
+      }
+
+      // Validate date formats
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/
+      if (parsed.valid_from && !dateRegex.test(parsed.valid_from)) {
+        parsed.valid_from = null
+      }
+      if (parsed.valid_until && !dateRegex.test(parsed.valid_until)) {
+        parsed.valid_until = null
+      }
+
+      // Ensure numeric fields are numbers
+      for (const field of ['monthly_payment', 'unit_price_low', 'fixed_fee'] as const) {
+        if (parsed[field] !== null && parsed[field] !== undefined) {
+          const num = Number(parsed[field])
+          parsed[field] = isNaN(num) ? null : num
+        }
+      }
+
       await supabase.from('ai_usage_log').insert({
         user_id: userId,
         success: true
@@ -166,7 +190,7 @@ VRAŤ POUZE JSON. Žádný text, žádné vysvětlení, žádné markdown.`
         error_message: 'Nevalidní JSON od AI'
       })
       return NextResponse.json(
-        { error: 'AI vrátila nevalidní JSON: ' + jsonStr.substring(0, 200) },
+        { error: 'AI vrátila nevalidní JSON: ' + text.substring(0, 200) },
         { status: 500 }
       )
     }
