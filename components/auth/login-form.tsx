@@ -185,8 +185,11 @@ export function LoginForm() {
         setError(error.message)
       } else {
         setSuccessMsg('Heslo bylo úspěšně změněno. Přihlašte se prosím znovu.')
+        setPassword('')
         await supabase.auth.signOut()
         setTimeout(() => {
+          setMode('login')
+          setSuccessMsg('')
           router.push('/login')
           router.refresh()
         }, 2000)

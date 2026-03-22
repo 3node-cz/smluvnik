@@ -1,9 +1,8 @@
 'use client'
 
 import { TrendingUp, FileText, AlertTriangle, CheckCircle } from 'lucide-react'
-import { Card } from '@/components/ui/card'
+import { Card, CardHeader, CardTitle, CardDescription, CardAction } from '@/components/ui/card'
 import type { Contract } from '@/lib/types/database'
-import { CONTRACT_CATEGORIES } from '@/lib/types/database'
 
 interface DashboardStatsProps {
   contracts: Contract[]
@@ -18,14 +17,6 @@ export function DashboardStats({ contracts }: DashboardStatsProps) {
     const days = Math.ceil((new Date(c.valid_until).getTime() - now.getTime()) / 86400000)
     return days > 0 && days <= (c.notification_days_before || 45)
   })
-
-  const catCounts: Record<string, number> = {}
-  contracts.forEach(c => {
-    catCounts[c.category] = (catCounts[c.category] || 0) + 1
-  })
-  const topCategories = Object.entries(catCounts)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5)
 
   const stats = [
     {
@@ -63,55 +54,27 @@ export function DashboardStats({ contracts }: DashboardStatsProps) {
   ]
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat, i) => {
-          const Icon = stat.icon
-          return (
-            <Card
-              key={i}
-              className={`rounded-2xl p-5 shadow-sm animate-slide-up-${i + 1} ${stat.color}`}
-            >
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-4 ${stat.iconBg}`}>
-                <Icon className={`w-4 h-4 ${stat.iconColor}`} />
-              </div>
-              <p className="text-3xl font-bold font-display mb-1">{stat.value}</p>
-              <p className={`text-xs font-medium ${stat.color.includes('navy-900 text-white') ? 'text-navy-300' : 'text-navy-500'}`}>
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      {stats.map((stat, i) => {
+        const Icon = stat.icon
+        return (
+          <Card key={i} size="sm" className={stat.color}>
+            <CardHeader>
+              <CardDescription className={stat.color.includes('text-white') ? 'text-navy-300' : ''}>
                 {stat.label}
-              </p>
-            </Card>
-          )
-        })}
-      </div>
-
-      {topCategories.length > 0 && (
-        <Card className="rounded-2xl p-6 animate-slide-up-5">
-          <h3 className="text-sm font-semibold text-navy-700 mb-4">Rozdělení podle kategorií</h3>
-          <div className="space-y-2">
-            {topCategories.map(([cat, count]) => {
-              const catDef = CONTRACT_CATEGORIES.find(c => c.value === cat)
-              const pct = Math.round((count / contracts.length) * 100)
-              return (
-                <div key={cat} className="flex items-center gap-3">
-                  <span className="text-base">{catDef?.icon || '📄'}</span>
-                  <div className="flex-1">
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="font-medium text-navy-700">{catDef?.label || cat}</span>
-                      <span className="text-navy-400">{count}</span>
-                    </div>
-                    <div className="h-1.5 bg-navy-100 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-teal-500 rounded-full transition-all"
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
-                  </div>
+              </CardDescription>
+              <CardTitle className={`text-2xl font-bold font-display tabular-nums ${stat.color.includes('text-white') ? 'text-white' : 'text-navy-900'}`}>
+                {stat.value}
+              </CardTitle>
+              <CardAction>
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${stat.iconBg}`}>
+                  <Icon className={`w-4 h-4 ${stat.iconColor}`} />
                 </div>
-              )
-            })}
-          </div>
-        </Card>
-      )}
+              </CardAction>
+            </CardHeader>
+          </Card>
+        )
+      })}
     </div>
   )
 }

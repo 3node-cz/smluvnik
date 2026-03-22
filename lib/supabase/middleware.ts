@@ -36,7 +36,8 @@ export async function updateSession(request: NextRequest) {
   }
 
   // Authenticated user on /login -> root (dashboard)
-  if (user && pathname === '/login') {
+  // Exception: allow /login?mode=new_password for password recovery flow
+  if (user && pathname === '/login' && request.nextUrl.searchParams.get('mode') !== 'new_password') {
     const url = request.nextUrl.clone()
     url.pathname = '/'
     return NextResponse.redirect(url)

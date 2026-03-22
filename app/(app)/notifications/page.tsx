@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { NotificationList } from '@/components/notifications/notification-list'
+import { NotificationsPageClient } from '@/components/notifications/notifications-page-client'
 import type { Contract } from '@/lib/types/database'
 
 export default async function NotificationsPage() {
@@ -9,5 +9,5 @@ export default async function NotificationsPage() {
     .select('*')
     .order('valid_until', { ascending: true })
 
-  return <NotificationList contracts={(contracts as Contract[]) || []} />
+  return <NotificationsPageClient contracts={(contracts as Contract[]) || []} />
 }
