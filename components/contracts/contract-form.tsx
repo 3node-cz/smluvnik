@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
+import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import { createClient } from '@/lib/supabase/client'
 import { addContract, updateContract } from '@/lib/actions/contracts'
 import { useApp } from '@/lib/context'
@@ -342,16 +342,16 @@ export function ContractForm({ open, onOpenChange, initial, onSaved }: ContractF
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2 sm:col-span-1">
                 <Label className="mb-1.5">Kategorie *</Label>
-                <select
+                <NativeSelect
                   value={formData.category}
                   onChange={e => update('category', e.target.value as ContractCategory)}
-                  className="flex h-9 w-full rounded-lg border border-input bg-transparent px-2.5 py-1.5 text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                  className="w-full"
                   required
                 >
                   {CONTRACT_CATEGORIES.map(cat => (
-                    <option key={cat.value} value={cat.value}>{cat.icon} {cat.label}</option>
+                    <NativeSelectOption key={cat.value} value={cat.value}>{cat.icon} {cat.label}</NativeSelectOption>
                   ))}
-                </select>
+                </NativeSelect>
                 {isVlastni && (
                   <Input
                     type="text"

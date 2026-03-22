@@ -8,13 +8,7 @@ import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from '@/components/ui/select'
+import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import {
   Building2,
   FileText,
@@ -137,25 +131,18 @@ export function SupplierList({ contracts, initialNotes }: SupplierListProps) {
             className="pl-9 h-10"
           />
         </div>
-        <Select
-          value={sort}
-          onValueChange={(value) => setSort(value as SortOption)}
-          items={{
-            amount_desc: 'Nejvyšší částka',
-            contracts_desc: 'Nejvíce smluv',
-            name_asc: 'Abecedně A-Z',
-          }}
-        >
-          <SelectTrigger className="h-10 gap-2">
-            <ArrowUpDown className="w-3.5 h-3.5 text-muted-foreground" />
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="amount_desc">Nejvyšší částka</SelectItem>
-            <SelectItem value="contracts_desc">Nejvíce smluv</SelectItem>
-            <SelectItem value="name_asc">Abecedně A-Z</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="relative">
+          <ArrowUpDown className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+          <NativeSelect
+            value={sort}
+            onChange={e => setSort(e.target.value as SortOption)}
+            className="pl-8"
+          >
+            <NativeSelectOption value="amount_desc">Nejvyšší částka</NativeSelectOption>
+            <NativeSelectOption value="contracts_desc">Nejvíce smluv</NativeSelectOption>
+            <NativeSelectOption value="name_asc">Abecedně A-Z</NativeSelectOption>
+          </NativeSelect>
+        </div>
       </div>
 
       {suppliers.length === 0 ? (

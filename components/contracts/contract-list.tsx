@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Search, ArrowUpDown, Download, LayoutGrid, List, FileText, Calendar, RefreshCw, Lock, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
+import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu'
 import { useApp } from '@/lib/context'
@@ -311,21 +311,19 @@ export function ContractList({ contracts, plan, totalCount }: ContractListProps)
 
       {/* Sort + Category filter */}
       <div className="flex flex-wrap items-center gap-2">
-        <Select
-          value={sort}
-          onValueChange={(value) => setSort(value as SortOption)}
-          items={Object.fromEntries(SORT_OPTIONS.map(o => [o.value, o.label]))}
-        >
-          <SelectTrigger size="sm" className="rounded-full text-xs font-semibold border-navy-200 bg-white text-navy-600 hover:bg-navy-50 gap-1.5">
-            <ArrowUpDown className="w-3.5 h-3.5 text-navy-400" />
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
+        <div className="relative">
+          <ArrowUpDown className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-navy-400 pointer-events-none" />
+          <NativeSelect
+            value={sort}
+            onChange={e => setSort(e.target.value as SortOption)}
+            size="sm"
+            className="pl-8"
+          >
             {SORT_OPTIONS.map(o => (
-              <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+              <NativeSelectOption key={o.value} value={o.value}>{o.label}</NativeSelectOption>
             ))}
-          </SelectContent>
-        </Select>
+          </NativeSelect>
+        </div>
 
         <div className="w-px h-6 bg-navy-200" />
 
