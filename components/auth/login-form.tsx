@@ -60,9 +60,9 @@ export function LoginForm() {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) {
         if (error.message.includes('Email not confirmed')) {
-          setError('V\u00e1\u0161 email je\u0161t\u011b nebyl ov\u011b\u0159en. Zkontrolujte schr\u00e1nku a klikn\u011bte na odkaz.')
+          setError('Váš email ještě nebyl ověřen. Zkontrolujte schránku a klikněte na odkaz.')
         } else if (error.message.includes('Invalid login credentials')) {
-          setError('Nespr\u00e1vn\u00fd email nebo heslo.')
+          setError('Nesprávný email nebo heslo.')
         } else {
           setError(error.message)
         }
@@ -98,7 +98,7 @@ export function LoginForm() {
         code: mfaCode,
       })
       if (error) {
-        setError('Nespr\u00e1vn\u00fd k\u00f3d. Zkuste znovu.')
+        setError('Nesprávný kód. Zkuste znovu.')
       } else {
         router.push('/')
         router.refresh()
@@ -109,11 +109,11 @@ export function LoginForm() {
   }
 
   const validatePassword = (pwd: string): string | null => {
-    if (pwd.length < 8) return 'Heslo mus\u00ed m\u00edt alespo\u0148 8 znak\u016f.'
-    if (!/[A-Z]/.test(pwd)) return 'Heslo mus\u00ed obsahovat alespo\u0148 jedno velk\u00e9 p\u00edsmeno.'
-    if (!/[a-z]/.test(pwd)) return 'Heslo mus\u00ed obsahovat alespo\u0148 jedno mal\u00e9 p\u00edsmeno.'
-    if (!/[0-9]/.test(pwd)) return 'Heslo mus\u00ed obsahovat alespo\u0148 jedno \u010d\u00edslo.'
-    if (!/[^A-Za-z0-9]/.test(pwd)) return 'Heslo mus\u00ed obsahovat alespo\u0148 jeden speci\u00e1ln\u00ed znak (nap\u0159. !@#$%).'
+    if (pwd.length < 8) return 'Heslo musí mít alespoň 8 znaků.'
+    if (!/[A-Z]/.test(pwd)) return 'Heslo musí obsahovat alespoň jedno velké písmeno.'
+    if (!/[a-z]/.test(pwd)) return 'Heslo musí obsahovat alespoň jedno malé písmeno.'
+    if (!/[0-9]/.test(pwd)) return 'Heslo musí obsahovat alespoň jedno číslo.'
+    if (!/[^A-Za-z0-9]/.test(pwd)) return 'Heslo musí obsahovat alespoň jeden speciální znak (např. !@#$%).'
     return null
   }
 
@@ -121,7 +121,7 @@ export function LoginForm() {
     e.preventDefault()
     setError('')
     if (!agreed) {
-      setError('Pro registraci mus\u00edte souhlasit s podm\u00ednkami pou\u017eit\u00ed a z\u00e1sadami ochrany osobn\u00edch \u00fadaj\u016f.')
+      setError('Pro registraci musíte souhlasit s podmínkami použití a zásadami ochrany osobních údajů.')
       return
     }
     const pwdError = validatePassword(password)
@@ -162,7 +162,7 @@ export function LoginForm() {
       if (error) {
         setError(error.message)
       } else {
-        setSuccessMsg('Odkaz pro obnoven\u00ed hesla byl odesl\u00e1n na v\u00e1\u0161 email.')
+        setSuccessMsg('Odkaz pro obnovení hesla byl odeslán na váš email.')
       }
     } finally {
       setLoading(false)
@@ -184,7 +184,7 @@ export function LoginForm() {
       if (error) {
         setError(error.message)
       } else {
-        setSuccessMsg('Heslo bylo \u00fasp\u011b\u0161n\u011b zm\u011bn\u011bno. P\u0159ihla\u0161te se pros\u00edm znovu.')
+        setSuccessMsg('Heslo bylo úspěšně změněno. Přihlašte se prosím znovu.')
         await supabase.auth.signOut()
         setTimeout(() => {
           router.push('/login')
@@ -205,14 +205,14 @@ export function LoginForm() {
           </div>
         </div>
         <h2 className="text-2xl font-bold text-navy-900 mb-3">Zkontrolujte email</h2>
-        <p className="text-navy-600 mb-2">Na adresu <strong>{email}</strong> jsme poslali potvrzovac\u00ed odkaz.</p>
-        <p className="text-navy-500 text-sm mb-8">Po kliknut\u00ed na odkaz budete automaticky p\u0159esm\u011brov\u00e1ni do aplikace.</p>
+        <p className="text-navy-600 mb-2">Na adresu <strong>{email}</strong> jsme poslali potvrzovací odkaz.</p>
+        <p className="text-navy-500 text-sm mb-8">Po kliknutí na odkaz budete automaticky přesměrováni do aplikace.</p>
         <Button
           variant="outline"
           className="w-full justify-center"
           onClick={() => setMode('login')}
         >
-          Zp\u011bt na p\u0159ihl\u00e1\u0161en\u00ed
+          Zpět na přihlášení
         </Button>
       </div>
     )
@@ -226,16 +226,16 @@ export function LoginForm() {
             <Lock className="w-10 h-10 text-teal-600" />
           </div>
         </div>
-        <h2 className="text-2xl font-bold text-navy-900 mb-1 text-center">Nov\u00e9 heslo</h2>
-        <p className="text-navy-500 text-sm mb-6 text-center">Zadejte sv\u00e9 nov\u00e9 heslo</p>
+        <h2 className="text-2xl font-bold text-navy-900 mb-1 text-center">Nové heslo</h2>
+        <p className="text-navy-500 text-sm mb-6 text-center">Zadejte své nové heslo</p>
 
         <div className="bg-navy-50 rounded-xl p-3 mb-4 text-xs text-navy-600 space-y-1">
-          <p className="font-semibold mb-1">Heslo mus\u00ed obsahovat:</p>
-          <p className={password.length >= 8 ? 'text-teal-600' : ''}>&#10003; alespo\u0148 8 znak\u016f</p>
-          <p className={/[A-Z]/.test(password) ? 'text-teal-600' : ''}>&#10003; velk\u00e9 p\u00edsmeno</p>
-          <p className={/[a-z]/.test(password) ? 'text-teal-600' : ''}>&#10003; mal\u00e9 p\u00edsmeno</p>
-          <p className={/[0-9]/.test(password) ? 'text-teal-600' : ''}>&#10003; \u010d\u00edslo</p>
-          <p className={/[^A-Za-z0-9]/.test(password) ? 'text-teal-600' : ''}>&#10003; speci\u00e1ln\u00ed znak (!@#$%)</p>
+          <p className="font-semibold mb-1">Heslo musí obsahovat:</p>
+          <p className={password.length >= 8 ? 'text-teal-600' : ''}>&#10003; alespoň 8 znaků</p>
+          <p className={/[A-Z]/.test(password) ? 'text-teal-600' : ''}>&#10003; velké písmeno</p>
+          <p className={/[a-z]/.test(password) ? 'text-teal-600' : ''}>&#10003; malé písmeno</p>
+          <p className={/[0-9]/.test(password) ? 'text-teal-600' : ''}>&#10003; číslo</p>
+          <p className={/[^A-Za-z0-9]/.test(password) ? 'text-teal-600' : ''}>&#10003; speciální znak (!@#$%)</p>
         </div>
 
         {error && <Alert variant="destructive" className="mb-4"><AlertDescription>{error}</AlertDescription></Alert>}
@@ -246,7 +246,7 @@ export function LoginForm() {
             <Lock className="absolute left-3 top-3.5 w-4 h-4 text-navy-400" />
             <Input
               type={showPassword ? 'text' : 'password'}
-              placeholder="Nov\u00e9 heslo"
+              placeholder="Nové heslo"
               value={password}
               onChange={e => setPassword(e.target.value)}
               className="pl-10 pr-10 py-3 h-auto rounded-xl border-navy-200 text-navy-900 placeholder:text-navy-400 focus-visible:ring-teal-500 focus-visible:border-transparent"
@@ -257,7 +257,7 @@ export function LoginForm() {
             </Button>
           </div>
           <Button type="submit" disabled={loading} className="w-full justify-center py-3 h-auto text-base bg-teal-600 hover:bg-teal-700 text-white rounded-xl disabled:opacity-60">
-            {loading ? <span className="flex items-center gap-2"><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Ukl\u00e1d\u00e1m...</span> : 'Ulo\u017eit nov\u00e9 heslo'}
+            {loading ? <span className="flex items-center gap-2"><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Ukládám...</span> : 'Uložit nové heslo'}
           </Button>
         </form>
       </div>
@@ -272,8 +272,8 @@ export function LoginForm() {
             <Shield className="w-10 h-10 text-teal-600" />
           </div>
         </div>
-        <h2 className="text-2xl font-bold text-navy-900 mb-1 text-center">Dvoufaktorov\u00e9 ov\u011b\u0159en\u00ed</h2>
-        <p className="text-navy-500 text-sm mb-6 text-center">Zadejte 6m\u00edstn\u00fd k\u00f3d z va\u0161\u00ed autentiza\u010dn\u00ed aplikace</p>
+        <h2 className="text-2xl font-bold text-navy-900 mb-1 text-center">Dvoufaktorové ověření</h2>
+        <p className="text-navy-500 text-sm mb-6 text-center">Zadejte 6místný kód z vaší autentizační aplikace</p>
 
         {error && <Alert variant="destructive" className="mb-4"><AlertDescription>{error}</AlertDescription></Alert>}
 
@@ -292,11 +292,11 @@ export function LoginForm() {
             />
           </div>
           <Button type="submit" disabled={loading || mfaCode.length !== 6} className="w-full justify-center py-3 h-auto text-base bg-teal-600 hover:bg-teal-700 text-white rounded-xl disabled:opacity-60">
-            {loading ? <span className="flex items-center gap-2"><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Ov\u011b\u0159uji...</span> : 'Ov\u011b\u0159it'}
+            {loading ? <span className="flex items-center gap-2"><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Ověřuji...</span> : 'Ověřit'}
           </Button>
         </form>
         <Button variant="ghost" onClick={() => { setMode('login'); setMfaCode(''); setError('') }} className="w-full text-center text-sm text-navy-400 hover:text-navy-700 mt-4">
-          <ArrowLeft className="w-3 h-3 inline mr-1" /> Zp\u011bt na p\u0159ihl\u00e1\u0161en\u00ed
+          <ArrowLeft className="w-3 h-3 inline mr-1" /> Zpět na přihlášení
         </Button>
       </div>
     )
@@ -307,22 +307,22 @@ export function LoginForm() {
       <Dialog open={showTerms} onOpenChange={setShowTerms}>
         <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Podm\u00ednky pou\u017eit\u00ed</DialogTitle>
+            <DialogTitle>Podmínky použití</DialogTitle>
           </DialogHeader>
           <div className="text-sm text-navy-600 space-y-4">
-            <p><strong>Provozovatel:</strong> Petr Sziliczai, Palack\u00e9ho 508, 739 61 T\u0159inec, I\u010cO: 73264482</p>
-            <p>Smluvn\u00edk je webov\u00e1 aplikace pro evidenci smluv a dokument\u016f. Registrac\u00ed souhlas\u00edte s t\u011bmito podm\u00ednkami.</p>
-            <p><strong>Zku\u0161ebn\u00ed obdob\u00ed:</strong> Po registraci z\u00edsk\u00e1te pl\u00e1n St\u0159edn\u00ed na 14 dn\u00ed zdarma. Po uplynut\u00ed dojde k omezen\u00ed na pl\u00e1n Z\u00e1klad.</p>
-            <p><strong>P\u0159edplatn\u00e9:</strong> Ceny jsou uvedeny na str\u00e1nce Pl\u00e1ny. P\u0159edplatn\u00e9 se automaticky neobnovuje.</p>
-            <p><strong>Va\u0161e povinnosti:</strong> Nahr\u00e1vejte pouze dokumenty ke kter\u00fdm m\u00e1te opr\u00e1vn\u011bn\u00ed. Nesd\u00edlejte p\u0159\u00edstupov\u00e9 \u00fadaje. Nepou\u017e\u00edvejte slu\u017ebu k neleg\u00e1ln\u00edm \u00fa\u010del\u016fm.</p>
-            <p><strong>Omezen\u00ed odpov\u011bdnosti:</strong> V\u00fdsledky AI extrakce jsou orienta\u010dn\u00ed \u2013 v\u017edy je zkontrolujte. Neodpov\u00edd\u00e1me za \u0161kody zp\u016fsoben\u00e9 nedostupnost\u00ed slu\u017eby.</p>
-            <p><strong>Data p\u0159i ukon\u010den\u00ed:</strong> Podm\u00ednky uchov\u00e1v\u00e1n\u00ed dat po ukon\u010den\u00ed p\u0159edplatn\u00e9ho jsou uvedeny v z\u00e1sad\u00e1ch ochrany osobn\u00edch \u00fadaj\u016f.</p>
-            <p><strong>Zm\u011bny podm\u00ednek:</strong> O zm\u011bn\u00e1ch v\u00e1s informujeme e-mailem minim\u00e1ln\u011b 14 dn\u00ed p\u0159edem.</p>
-            <p><strong>Rozhodn\u00e9 pr\u00e1vo:</strong> \u010cesk\u00e1 republika.</p>
-            <p className="text-xs text-navy-400">Platn\u00e9 od 1. b\u0159ezna 2026</p>
+            <p><strong>Provozovatel:</strong> Petr Sziliczai, Palackého 508, 739 61 Třinec, IČO: 73264482</p>
+            <p>Smluvník je webová aplikace pro evidenci smluv a dokumentů. Registrací souhlasíte s těmito podmínkami.</p>
+            <p><strong>Zkušební období:</strong> Po registraci získáte plán Střední na 14 dní zdarma. Po uplynutí dojde k omezení na plán Základ.</p>
+            <p><strong>Předplatné:</strong> Ceny jsou uvedeny na stránce Plány. Předplatné se automaticky neobnovuje.</p>
+            <p><strong>Vaše povinnosti:</strong> Nahrávejte pouze dokumenty ke kterým máte oprávnění. Nesdílejte přístupové údaje. Nepoužívejte službu k nelegálním účelům.</p>
+            <p><strong>Omezení odpovědnosti:</strong> Výsledky AI extrakce jsou orientační – vždy je zkontrolujte. Neodpovídáme za škody způsobené nedostupností služby.</p>
+            <p><strong>Data při ukončení:</strong> Podmínky uchovávání dat po ukončení předplatného jsou uvedeny v zásadách ochrany osobních údajů.</p>
+            <p><strong>Změny podmínek:</strong> O změnách vás informujeme e-mailem minimálně 14 dní předem.</p>
+            <p><strong>Rozhodné právo:</strong> Česká republika.</p>
+            <p className="text-xs text-navy-400">Platné od 1. března 2026</p>
           </div>
           <DialogFooter>
-            <Button onClick={() => setShowTerms(false)} className="w-full bg-teal-600 hover:bg-teal-700 text-white">Zav\u0159\u00edt</Button>
+            <Button onClick={() => setShowTerms(false)} className="w-full bg-teal-600 hover:bg-teal-700 text-white">Zavřít</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -330,21 +330,21 @@ export function LoginForm() {
       <Dialog open={showPrivacy} onOpenChange={setShowPrivacy}>
         <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Z\u00e1sady ochrany osobn\u00edch \u00fadaj\u016f</DialogTitle>
+            <DialogTitle>Zásady ochrany osobních údajů</DialogTitle>
           </DialogHeader>
           <div className="text-sm text-navy-600 space-y-4">
-            <p><strong>Spr\u00e1vce:</strong> Petr Sziliczai, Palack\u00e9ho 508, 739 61 T\u0159inec, I\u010cO: 73264482, info@smluvnik.cz</p>
-            <p><strong>Co zpracov\u00e1v\u00e1me:</strong> E-mail, jm\u00e9no, data smluv kter\u00e9 zad\u00e1te, provozn\u00ed logy. Platebn\u00ed \u00fadaje zpracov\u00e1v\u00e1 v\u00fdhradn\u011b Stripe.</p>
-            <p><strong>Pro\u010d:</strong> Provoz slu\u017eby, zas\u00edl\u00e1n\u00ed upozorn\u011bn\u00ed na expirace, informace o p\u0159edplatn\u00e9m.</p>
-            <p><strong>P\u0159\u00edjemci:</strong> Supabase (datab\u00e1ze, EU), Vercel (hosting), Resend (emaily), Stripe (platby), Google Gemini (AI extrakce).</p>
-            <p><strong>Doba uchov\u00e1v\u00e1n\u00ed:</strong> Po dobu trv\u00e1n\u00ed \u00fa\u010dtu. Po zru\u0161en\u00ed \u00fa\u010dtu smaz\u00e1no do 30 dn\u00ed. \u00da\u010detn\u00ed doklady 5 let dle z\u00e1kona.</p>
-            <p><strong>Va\u0161e pr\u00e1va:</strong> P\u0159\u00edstup, oprava, v\u00fdmaz, p\u0159enositelnost, omezen\u00ed zpracov\u00e1n\u00ed. \u017d\u00e1dosti na info@smluvnik.cz, odpov\u00edme do 30 dn\u00ed.</p>
-            <p><strong>Cookies:</strong> Pouze technick\u00e9 cookies nezbytn\u00e9 pro p\u0159ihl\u00e1\u0161en\u00ed. \u017d\u00e1dn\u00e9 reklamn\u00ed ani sledovac\u00ed cookies.</p>
-            <p><strong>St\u00ed\u017enosti:</strong> \u00da\u0159ad pro ochranu osobn\u00edch \u00fadaj\u016f (uoou.cz).</p>
-            <p className="text-xs text-navy-400">Platn\u00e9 od 1. b\u0159ezna 2026</p>
+            <p><strong>Správce:</strong> Petr Sziliczai, Palackého 508, 739 61 Třinec, IČO: 73264482, info@smluvnik.cz</p>
+            <p><strong>Co zpracováváme:</strong> E-mail, jméno, data smluv které zadáte, provozní logy. Platební údaje zpracovává výhradně Stripe.</p>
+            <p><strong>Proč:</strong> Provoz služby, zasílání upozornění na expirace, informace o předplatném.</p>
+            <p><strong>Příjemci:</strong> Supabase (databáze, EU), Vercel (hosting), Resend (emaily), Stripe (platby), Google Gemini (AI extrakce).</p>
+            <p><strong>Doba uchovávání:</strong> Po dobu trvání účtu. Po zrušení účtu smazáno do 30 dní. Účetní doklady 5 let dle zákona.</p>
+            <p><strong>Vaše práva:</strong> Přístup, oprava, výmaz, přenositelnost, omezení zpracování. Žádosti na info@smluvnik.cz, odpovíme do 30 dní.</p>
+            <p><strong>Cookies:</strong> Pouze technické cookies nezbytné pro přihlášení. Žádné reklamní ani sledovací cookies.</p>
+            <p><strong>Stížnosti:</strong> Úřad pro ochranu osobních údajů (uoou.cz).</p>
+            <p className="text-xs text-navy-400">Platné od 1. března 2026</p>
           </div>
           <DialogFooter>
-            <Button onClick={() => setShowPrivacy(false)} className="w-full bg-teal-600 hover:bg-teal-700 text-white">Zav\u0159\u00edt</Button>
+            <Button onClick={() => setShowPrivacy(false)} className="w-full bg-teal-600 hover:bg-teal-700 text-white">Zavřít</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -352,25 +352,25 @@ export function LoginForm() {
       <div className="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md">
         {mode !== 'login' && (
           <Button variant="ghost" onClick={() => { setMode('login'); setError(''); setSuccessMsg('') }} className="flex items-center gap-1 text-navy-500 text-sm mb-6 hover:text-navy-800 px-0">
-            <ArrowLeft className="w-4 h-4" /> Zp\u011bt
+            <ArrowLeft className="w-4 h-4" /> Zpět
           </Button>
         )}
 
         <h2 className="text-2xl font-bold text-navy-900 mb-1">
-          {mode === 'login' ? 'P\u0159ihl\u00e1\u0161en\u00ed' : mode === 'register' ? 'Registrace' : 'Obnoven\u00ed hesla'}
+          {mode === 'login' ? 'Přihlášení' : mode === 'register' ? 'Registrace' : 'Obnovení hesla'}
         </h2>
         <p className="text-navy-500 text-sm mb-6">
-          {mode === 'login' ? 'V\u00edtejte zp\u011bt ve Smluvn\u00edku' : mode === 'register' ? 'Vytvo\u0159te si \u00fa\u010det zdarma' : 'Zadejte email pro obnoven\u00ed hesla'}
+          {mode === 'login' ? 'Vítejte zpět ve Smluvníku' : mode === 'register' ? 'Vytvořte si účet zdarma' : 'Zadejte email pro obnovení hesla'}
         </p>
 
         {mode === 'register' && (
           <div className="bg-navy-50 rounded-xl p-3 mb-4 text-xs text-navy-600 space-y-1">
-            <p className="font-semibold mb-1">Heslo mus\u00ed obsahovat:</p>
-            <p className={password.length >= 8 ? 'text-teal-600' : ''}>&#10003; alespo\u0148 8 znak\u016f</p>
-            <p className={/[A-Z]/.test(password) ? 'text-teal-600' : ''}>&#10003; velk\u00e9 p\u00edsmeno</p>
-            <p className={/[a-z]/.test(password) ? 'text-teal-600' : ''}>&#10003; mal\u00e9 p\u00edsmeno</p>
-            <p className={/[0-9]/.test(password) ? 'text-teal-600' : ''}>&#10003; \u010d\u00edslo</p>
-            <p className={/[^A-Za-z0-9]/.test(password) ? 'text-teal-600' : ''}>&#10003; speci\u00e1ln\u00ed znak (!@#$%)</p>
+            <p className="font-semibold mb-1">Heslo musí obsahovat:</p>
+            <p className={password.length >= 8 ? 'text-teal-600' : ''}>&#10003; alespoň 8 znaků</p>
+            <p className={/[A-Z]/.test(password) ? 'text-teal-600' : ''}>&#10003; velké písmeno</p>
+            <p className={/[a-z]/.test(password) ? 'text-teal-600' : ''}>&#10003; malé písmeno</p>
+            <p className={/[0-9]/.test(password) ? 'text-teal-600' : ''}>&#10003; číslo</p>
+            <p className={/[^A-Za-z0-9]/.test(password) ? 'text-teal-600' : ''}>&#10003; speciální znak (!@#$%)</p>
           </div>
         )}
 
@@ -383,7 +383,7 @@ export function LoginForm() {
               <User className="absolute left-3 top-3.5 w-4 h-4 text-navy-400" />
               <Input
                 type="text"
-                placeholder="Cel\u00e9 jm\u00e9no"
+                placeholder="Celé jméno"
                 value={fullName}
                 onChange={e => setFullName(e.target.value)}
                 className="pl-10 pr-4 py-3 h-auto rounded-xl border-navy-200 text-navy-900 placeholder:text-navy-400 focus-visible:ring-teal-500 focus-visible:border-transparent"
@@ -421,7 +421,7 @@ export function LoginForm() {
           {mode === 'login' && (
             <div className="text-right">
               <Button type="button" variant="link" onClick={() => { setMode('reset'); setError('') }} className="text-teal-600 text-sm h-auto p-0">
-                Zapomn\u011bli jste heslo?
+                Zapomněli jste heslo?
               </Button>
             </div>
           )}
@@ -434,10 +434,10 @@ export function LoginForm() {
                 className="mt-0.5"
               />
               <span className="text-xs text-navy-600 leading-relaxed">
-                Souhlas\u00edm s{' '}
-                <button type="button" onClick={() => setShowTerms(true)} className="text-teal-600 hover:underline font-medium">podm\u00ednkami pou\u017eit\u00ed</button>
+                Souhlasím s{' '}
+                <button type="button" onClick={() => setShowTerms(true)} className="text-teal-600 hover:underline font-medium">podmínkami použití</button>
                 {' '}a{' '}
-                <button type="button" onClick={() => setShowPrivacy(true)} className="text-teal-600 hover:underline font-medium">z\u00e1sadami ochrany osobn\u00edch \u00fadaj\u016f</button>
+                <button type="button" onClick={() => setShowPrivacy(true)} className="text-teal-600 hover:underline font-medium">zásadami ochrany osobních údajů</button>
               </span>
             </label>
           )}
@@ -448,8 +448,8 @@ export function LoginForm() {
             className="w-full justify-center py-3 h-auto text-base bg-teal-600 hover:bg-teal-700 text-white rounded-xl disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {loading ? (
-              <span className="flex items-center gap-2"><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Na\u010d\u00edt\u00e1n\u00ed...</span>
-            ) : mode === 'login' ? 'P\u0159ihl\u00e1sit se' : mode === 'register' ? 'Zaregistrovat se' : 'Odeslat odkaz'}
+              <span className="flex items-center gap-2"><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Načítání...</span>
+            ) : mode === 'login' ? 'Přihlásit se' : mode === 'register' ? 'Zaregistrovat se' : 'Odeslat odkaz'}
           </Button>
         </form>
 
@@ -461,14 +461,14 @@ export function LoginForm() {
             </div>
             <Button type="button" variant="outline" className="w-full flex items-center justify-center gap-3 rounded-xl py-3 h-auto text-sm text-navy-700" onClick={handleGoogleLogin} disabled={loading}>
               <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-              P\u0159ihl\u00e1sit se p\u0159es Google
+              Přihlásit se přes Google
             </Button>
           </div>
         )}
 
         {mode === 'login' && (
           <p className="text-center text-sm text-navy-500 mt-6">
-            Nem\u00e1te \u00fa\u010det?{' '}
+            Nemáte účet?{' '}
             <Button variant="link" onClick={() => { setMode('register'); setError('') }} className="text-teal-600 font-semibold h-auto p-0">Zaregistrujte se</Button>
           </p>
         )}
