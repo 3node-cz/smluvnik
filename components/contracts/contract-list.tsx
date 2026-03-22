@@ -18,6 +18,7 @@ import { CONTRACT_CATEGORIES } from '@/lib/types/database'
 interface ContractListProps {
   contracts: Contract[]
   plan: string
+  totalCount?: number
 }
 
 type SortOption = 'added_desc' | 'added_asc' | 'expiry_asc' | 'expiry_desc' | 'amount_desc' | 'amount_asc' | 'name_asc'
@@ -155,7 +156,7 @@ function ContractRow({ contract, onDelete, onEdit }: { contract: Contract; onDel
   )
 }
 
-export function ContractList({ contracts, plan }: ContractListProps) {
+export function ContractList({ contracts, plan, totalCount }: ContractListProps) {
   const router = useRouter()
   const { profile, appSettings } = useApp()
   const [search, setSearch] = useState('')
@@ -227,9 +228,13 @@ export function ContractList({ contracts, plan }: ContractListProps) {
 
   return (
     <div className="space-y-5">
-      {/* Add button */}
-      <div className="flex justify-end">
-        <Button onClick={handleAddNew} className="bg-teal-600 hover:bg-teal-700 text-white">
+      {/* Header: title + add button */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-navy-900 font-display">Smlouvy</h1>
+          <p className="text-navy-500 text-sm mt-1">{totalCount ?? contracts.length} smluv celkem</p>
+        </div>
+        <Button onClick={handleAddNew} className="bg-teal-600 hover:bg-teal-700 text-white w-full sm:w-auto">
           <Plus className="w-4 h-4" />
           Přidat smlouvu
         </Button>

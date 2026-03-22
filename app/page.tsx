@@ -31,19 +31,25 @@ export default async function Home() {
     appSettings[s.key] = s.value
   })
 
+  const typedContracts = (contracts as Contract[]) || []
+
+  const expiring = typedContracts.filter(c => {
+    if (!c.valid_until) return false
+    const days = Math.ceil((new Date(c.valid_until).getTime() - Date.now()) / 86400000)
+    return days >= 0 && days <= (c.notification_days_before || 45)
+  })
+  const expired = typedContracts.filter(c => c.valid_until && new Date(c.valid_until) < new Date())
+  const alertCount = expiring.length + expired.length
+
   return (
-    <AppProvider value={{ user, profile, appSettings }}>
+    <AppProvider value={{ user, profile, appSettings, alertCount }}>
       <div className="min-h-screen bg-navy-50 flex">
         <Sidebar />
         <main className="flex-1 lg:ml-64 pt-14 lg:pt-0">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
             <div className="space-y-8">
-              <div>
-                <h1 className="text-3xl font-bold text-navy-900 font-display">Smlouvy</h1>
-                <p className="text-navy-500 text-sm mt-1">{(contracts || []).length} smluv celkem</p>
-              </div>
-              <DashboardStats contracts={(contracts as Contract[]) || []} />
-              <ContractList contracts={(contracts as Contract[]) || []} plan={profile.plan || 'free'} />
+              <DashboardStats contracts={typedContracts} />
+              <ContractList contracts={typedContracts} plan={profile.plan || 'free'} totalCount={typedContracts.length} />
             </div>
           </div>
         </main>

@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { AppProvider } from '@/lib/context'
 import { Sidebar } from '@/components/shared/sidebar'
+import type { Contract } from '@/lib/types/database'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -23,8 +24,21 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     appSettings[s.key] = s.value
   })
 
+  const { data: contracts } = await supabase
+    .from('contracts')
+    .select('valid_until,notification_days_before')
+
+  const typedContracts = (contracts as Pick<Contract, 'valid_until' | 'notification_days_before'>[]) || []
+  const expiring = typedContracts.filter(c => {
+    if (!c.valid_until) return false
+    const days = Math.ceil((new Date(c.valid_until).getTime() - Date.now()) / 86400000)
+    return days >= 0 && days <= (c.notification_days_before || 45)
+  })
+  const expired = typedContracts.filter(c => c.valid_until && new Date(c.valid_until) < new Date())
+  const alertCount = expiring.length + expired.length
+
   return (
-    <AppProvider value={{ user, profile, appSettings }}>
+    <AppProvider value={{ user, profile, appSettings, alertCount }}>
       <div className="min-h-screen bg-navy-50 flex">
         <Sidebar />
         <main className="flex-1 lg:ml-64 pt-14 lg:pt-0">

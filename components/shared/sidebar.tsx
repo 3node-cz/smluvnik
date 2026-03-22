@@ -35,7 +35,7 @@ function isActive(pathname: string, href: string) {
 }
 
 export function Sidebar() {
-  const { user, profile } = useApp()
+  const { user, profile, alertCount } = useApp()
   const pathname = usePathname()
   const router = useRouter()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -76,6 +76,11 @@ export function Sidebar() {
               >
                 <Icon className="w-4 h-4" />
                 {item.label}
+                {item.href === '/notifications' && alertCount != null && alertCount > 0 && (
+                  <span className="ml-auto bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {alertCount > 9 ? '9+' : alertCount}
+                  </span>
+                )}
               </Link>
             )
           })}
@@ -144,6 +149,11 @@ export function Sidebar() {
                 >
                   <Icon className="w-4 h-4" />
                   {item.label}
+                  {item.href === '/notifications' && alertCount != null && alertCount > 0 && (
+                    <span className="ml-auto bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {alertCount > 9 ? '9+' : alertCount}
+                    </span>
+                  )}
                 </Link>
               )
             })}

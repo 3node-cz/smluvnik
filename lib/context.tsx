@@ -8,6 +8,7 @@ interface AppContext {
   user: User
   profile: Profile
   appSettings: Record<string, string>
+  alertCount?: number
 }
 
 const AppContext = createContext<AppContext | null>(null)
