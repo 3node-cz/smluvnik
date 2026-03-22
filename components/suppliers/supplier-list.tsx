@@ -107,9 +107,9 @@ export function SupplierList({ contracts, initialNotes }: SupplierListProps) {
       <Card className="text-center py-20">
         <div className="flex flex-col items-center px-4">
           <Building2 className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-bold mb-2">Zadni dodavatele</h3>
+          <h3 className="text-lg font-bold mb-2">Žádní dodavatelé</h3>
           <p className="text-muted-foreground text-sm">
-            Pridejte smlouvy a dodavatele se zobrazi zde.
+            Přidejte smlouvy a dodavatelé se zobrazí zde.
           </p>
         </div>
       </Card>
@@ -119,13 +119,13 @@ export function SupplierList({ contracts, initialNotes }: SupplierListProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Dodavatele</h1>
+        <h1 className="text-3xl font-bold">Dodavatelé</h1>
         <p className="text-muted-foreground text-sm mt-1">
-          {allSuppliers.length} dodavatelu celkem
+          {allSuppliers.length} dodavatelů celkem
         </p>
       </div>
 
-      {/* Vyhledavani a razeni */}
+      {/* Vyhledávání a řazení */}
       <div className="flex gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -140,6 +140,11 @@ export function SupplierList({ contracts, initialNotes }: SupplierListProps) {
         <Select
           value={sort}
           onValueChange={(value) => setSort(value as SortOption)}
+          items={{
+            amount_desc: 'Nejvyšší částka',
+            contracts_desc: 'Nejvíce smluv',
+            name_asc: 'Abecedně A-Z',
+          }}
         >
           <SelectTrigger className="h-10 gap-2">
             <ArrowUpDown className="w-3.5 h-3.5 text-muted-foreground" />
@@ -157,7 +162,7 @@ export function SupplierList({ contracts, initialNotes }: SupplierListProps) {
         <Card className="text-center py-12">
           <div className="flex flex-col items-center px-4">
             <Search className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-            <p className="text-muted-foreground text-sm">Zadny dodavatel nenalezen</p>
+            <p className="text-muted-foreground text-sm">Žádný dodavatel nenalezen</p>
           </div>
         </Card>
       ) : (
@@ -192,13 +197,13 @@ export function SupplierList({ contracts, initialNotes }: SupplierListProps) {
                       </span>
                       {s.totalMonthly > 0 && (
                         <span className="text-xs text-muted-foreground">
-                          {s.totalMonthly.toLocaleString('cs-CZ')} Kc/mesic
+                          {s.totalMonthly.toLocaleString('cs-CZ')} Kč/měsíc
                         </span>
                       )}
                       {supplierNotes.length > 0 && (
                         <span className="text-xs bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full dark:bg-teal-900 dark:text-teal-300">
                           {supplierNotes.length}{' '}
-                          {supplierNotes.length === 1 ? 'poznamka' : 'poznamky'}
+                          {supplierNotes.length === 1 ? 'poznámka' : 'poznámky'}
                         </span>
                       )}
                     </div>
@@ -206,7 +211,7 @@ export function SupplierList({ contracts, initialNotes }: SupplierListProps) {
                   <div className="flex items-center gap-2 flex-shrink-0">
                     {activeContracts.length > 0 && (
                       <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium dark:bg-green-900 dark:text-green-300">
-                        {activeContracts.length} aktivni
+                        {activeContracts.length} aktivní
                       </span>
                     )}
                     {isExpanded ? (
@@ -236,7 +241,7 @@ export function SupplierList({ contracts, initialNotes }: SupplierListProps) {
                               <div className="flex items-center gap-3">
                                 {c.monthly_payment && (
                                   <span className="text-muted-foreground text-xs">
-                                    {c.monthly_payment.toLocaleString('cs-CZ')} Kc/mes
+                                    {c.monthly_payment.toLocaleString('cs-CZ')} Kč/měs
                                   </span>
                                 )}
                                 {c.valid_until && (
@@ -248,7 +253,7 @@ export function SupplierList({ contracts, initialNotes }: SupplierListProps) {
                                     }`}
                                   >
                                     {isExpired
-                                      ? 'Expirovana'
+                                      ? 'Expirovaná'
                                       : `do ${new Date(c.valid_until).toLocaleDateString('cs-CZ')}`}
                                   </span>
                                 )}
@@ -261,11 +266,11 @@ export function SupplierList({ contracts, initialNotes }: SupplierListProps) {
 
                     <div>
                       <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                        Poznamky
+                        Poznámky
                       </h4>
                       {supplierNotes.length === 0 ? (
                         <p className="text-xs text-muted-foreground italic mb-2">
-                          Zadne poznamky
+                          Žádné poznámky
                         </p>
                       ) : (
                         <div className="space-y-2 mb-2">
@@ -303,7 +308,7 @@ export function SupplierList({ contracts, initialNotes }: SupplierListProps) {
                           onKeyDown={(e) =>
                             e.key === 'Enter' && handleAddNote(s.provider)
                           }
-                          placeholder="Pridat poznamku..."
+                          placeholder="Přidat poznámku..."
                           className="flex-1 h-9"
                         />
                         <Button

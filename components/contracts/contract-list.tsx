@@ -308,7 +308,11 @@ export function ContractList({ contracts, plan }: ContractListProps) {
 
       {/* Sort + Category filter */}
       <div className="flex flex-wrap items-center gap-2">
-        <Select value={sort} onValueChange={(value) => setSort(value as SortOption)}>
+        <Select
+          value={sort}
+          onValueChange={(value) => setSort(value as SortOption)}
+          items={Object.fromEntries(SORT_OPTIONS.map(o => [o.value, o.label]))}
+        >
           <SelectTrigger size="sm" className="rounded-full text-xs font-semibold border-navy-200 bg-white text-navy-600 hover:bg-navy-50 gap-1.5">
             <ArrowUpDown className="w-3.5 h-3.5 text-navy-400" />
             <SelectValue />

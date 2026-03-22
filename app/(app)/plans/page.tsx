@@ -111,14 +111,14 @@ export default function PlansPage() {
       </div>
 
       <div className="flex justify-center">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start w-full max-w-3xl">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start w-full max-w-3xl mt-4">
           {visiblePlans.map(plan => {
             const Icon = plan.icon
             const isCurrent = activePlan === plan.id
             return (
               <Card
                 key={plan.id}
-                className={`relative border-2 ${plan.highlight ? 'border-teal-400 shadow-lg shadow-teal-100' : 'border-navy-200'} rounded-2xl p-6`}
+                className={`relative overflow-visible border-2 ${plan.highlight ? 'border-teal-400 shadow-lg shadow-teal-100' : 'border-navy-200'} rounded-2xl p-6`}
               >
                 {plan.highlight && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-teal-500 text-white text-xs px-4 py-1 rounded-full font-semibold whitespace-nowrap">

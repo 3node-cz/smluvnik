@@ -177,3 +177,13 @@
     @apply font-sans;
   }
 }
+
+@layer components {
+  .nav-item {
+    @apply flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium text-navy-600 hover:bg-navy-100 hover:text-navy-900 transition-all cursor-pointer;
+  }
+
+  .nav-item-active {
+    @apply flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium bg-navy-800 text-white shadow-sm;
+  }
+}
