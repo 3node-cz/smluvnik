@@ -451,7 +451,7 @@ export function ContractForm({ open, onOpenChange, initial, onSaved }: ContractF
           </form>
         </div>
 
-        <DialogFooter className="px-6 py-5">
+        <DialogFooter className="mx-0 mb-0 rounded-b-xl border-t border-navy-100 px-6 py-4 bg-transparent">
           <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1 sm:flex-none">
             Zrušit
           </Button>
