@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Camera, Sparkles, Loader, AlertCircle, FileText, File, X } from 'lucide-react'
 import { toast } from 'sonner'
@@ -57,24 +57,36 @@ export function ContractForm({ open, onOpenChange, initial, onSaved }: ContractF
   const fileInputRef = useRef<HTMLInputElement>(null)
   const cameraInputRef = useRef<HTMLInputElement>(null)
 
-  const [formData, setFormData] = useState<Partial<Contract>>({
-    category: initial?.category || 'ostatni',
-    custom_category: initial?.custom_category || '',
-    provider: initial?.provider || '',
-    contract_number: initial?.contract_number || '',
-    monthly_payment: initial?.monthly_payment,
-    unit_price_low: initial?.unit_price_low,
-    unit_price_high: initial?.unit_price_high,
-    fixed_fee: initial?.fixed_fee,
-    valid_from: initial?.valid_from || '',
-    valid_until: initial?.valid_until || '',
-    notification_days_before: initial?.notification_days_before ?? 45,
-    notification_email: initial?.notification_email || '',
-    auto_renewal: initial?.auto_renewal ?? false,
-    contact_phone: initial?.contact_phone || '',
-    contact_email: initial?.contact_email || '',
-    notes: initial?.notes || '',
+  const getInitialFormData = (contract?: Contract | null): Partial<Contract> => ({
+    category: contract?.category || 'ostatni',
+    custom_category: contract?.custom_category || '',
+    provider: contract?.provider || '',
+    contract_number: contract?.contract_number || '',
+    monthly_payment: contract?.monthly_payment,
+    unit_price_low: contract?.unit_price_low,
+    unit_price_high: contract?.unit_price_high,
+    fixed_fee: contract?.fixed_fee,
+    valid_from: contract?.valid_from || '',
+    valid_until: contract?.valid_until || '',
+    notification_days_before: contract?.notification_days_before ?? 45,
+    notification_email: contract?.notification_email || '',
+    auto_renewal: contract?.auto_renewal ?? false,
+    contact_phone: contract?.contact_phone || '',
+    contact_email: contract?.contact_email || '',
+    notes: contract?.notes || '',
   })
+
+  const [formData, setFormData] = useState<Partial<Contract>>(getInitialFormData(initial))
+
+  // Reset form when initial contract changes or dialog opens
+  useEffect(() => {
+    if (open) {
+      setFormData(getInitialFormData(initial))
+      setSelectedFile(null)
+      setFilePreview(null)
+      setGeminiError('')
+    }
+  }, [open, initial])
 
   const update = (key: keyof Contract, value: unknown) => {
     setFormData(prev => ({ ...prev, [key]: value }))
@@ -330,21 +342,16 @@ export function ContractForm({ open, onOpenChange, initial, onSaved }: ContractF
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2 sm:col-span-1">
                 <Label className="mb-1.5">Kategorie *</Label>
-                <Select
-                  value={formData.category as string}
-                  onValueChange={(value) => update('category', value as ContractCategory)}
+                <select
+                  value={formData.category}
+                  onChange={e => update('category', e.target.value as ContractCategory)}
+                  className="flex h-9 w-full rounded-lg border border-input bg-transparent px-2.5 py-1.5 text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                  required
                 >
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {CONTRACT_CATEGORIES.map(cat => (
-                      <SelectItem key={cat.value} value={cat.value}>
-                        {cat.icon} {cat.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  {CONTRACT_CATEGORIES.map(cat => (
+                    <option key={cat.value} value={cat.value}>{cat.icon} {cat.label}</option>
+                  ))}
+                </select>
                 {isVlastni && (
                   <Input
                     type="text"
