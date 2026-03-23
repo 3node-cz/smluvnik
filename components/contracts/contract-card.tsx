@@ -91,14 +91,25 @@ export function ContractCard({ contract, onEdit, onDelete }: ContractCardProps) 
   }, [expanded])
 
   const handleViewDocument = async (filePath: string) => {
+    // Open window synchronously to avoid mobile popup blockers
+    const newWindow = window.open('', '_blank')
     const supabase = createClient()
     const { data } = await supabase.storage.from('contracts').createSignedUrl(filePath, 3600)
-    if (data?.signedUrl) window.open(data.signedUrl, '_blank')
+    if (data?.signedUrl) {
+      if (newWindow) {
+        newWindow.location.href = data.signedUrl
+      } else {
+        // Fallback if popup was still blocked
+        window.location.href = data.signedUrl
+      }
+    } else {
+      newWindow?.close()
+    }
   }
 
   const handleDownloadDocument = async (filePath: string, fileName: string) => {
     const supabase = createClient()
-    const { data } = await supabase.storage.from('contracts').createSignedUrl(filePath, 3600)
+    const { data } = await supabase.storage.from('contracts').createSignedUrl(filePath, 3600, { download: fileName })
     if (data?.signedUrl) {
       const a = document.createElement('a')
       a.href = data.signedUrl
