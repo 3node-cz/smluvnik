@@ -63,6 +63,7 @@ export function ContractForm({ open, onOpenChange, initial, onSaved }: ContractF
     provider: contract?.provider || '',
     contract_number: contract?.contract_number || '',
     monthly_payment: contract?.monthly_payment,
+    payment_frequency: contract?.payment_frequency || 'monthly',
     unit_price_low: contract?.unit_price_low,
     unit_price_high: contract?.unit_price_high,
     fixed_fee: contract?.fixed_fee,
@@ -123,14 +124,12 @@ export function ContractForm({ open, onOpenChange, initial, onSaved }: ContractF
     setGeminiLoading(true)
     setGeminiError('')
     try {
-      const supabase = createClient()
       const base64 = await fileToBase64(selectedFile)
       const mimeType = selectedFile.type || 'application/pdf'
-      const { data: { session } } = await supabase.auth.getSession()
       const response = await fetch('/api/extract', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ base64, mimeType, userId: session?.user?.id })
+        body: JSON.stringify({ base64, mimeType })
       })
       if (!response.ok) {
         const err = await response.json()
@@ -386,9 +385,23 @@ export function ContractForm({ open, onOpenChange, initial, onSaved }: ContractF
               </div>
             </div>
 
-            <div>
-              <Label className="mb-1.5">Měsíční platba (Kč)</Label>
-              <Input type="number" step="0.01" value={formData.monthly_payment || ''} onChange={e => update('monthly_payment', e.target.value ? parseFloat(e.target.value) : undefined)} placeholder="1500" />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="mb-1.5">Platba (Kč)</Label>
+                <Input type="number" step="0.01" value={formData.monthly_payment || ''} onChange={e => update('monthly_payment', e.target.value ? parseFloat(e.target.value) : undefined)} placeholder="1500" />
+              </div>
+              <div>
+                <Label className="mb-1.5">Frekvence</Label>
+                <NativeSelect
+                  value={formData.payment_frequency || 'monthly'}
+                  onChange={e => update('payment_frequency', e.target.value)}
+                  className="w-full"
+                >
+                  <NativeSelectOption value="monthly">Měsíčně</NativeSelectOption>
+                  <NativeSelectOption value="quarterly">Čtvrtletně</NativeSelectOption>
+                  <NativeSelectOption value="yearly">Ročně</NativeSelectOption>
+                </NativeSelect>
+              </div>
             </div>
 
             {(formData.category === 'energie' || formData.category === 'plyn') && (

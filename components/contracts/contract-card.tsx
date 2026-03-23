@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/client'
 import { deleteDocument } from '@/lib/actions/documents'
 import type { Contract } from '@/lib/types/database'
-import { CONTRACT_CATEGORIES } from '@/lib/types/database'
+import { CONTRACT_CATEGORIES, getPaymentLabel } from '@/lib/types/database'
 
 interface ContractDocument {
   id: string
@@ -107,10 +107,10 @@ export function ContractCard({ contract, onEdit, onDelete }: ContractCardProps) 
     }
   }
 
-  const handleDeleteDocument = async (docId: string, filePath: string) => {
+  const handleDeleteDocument = async (docId: string) => {
     if (docId === 'original') return
     if (!window.confirm('Smazat tento dokument?')) return
-    await deleteDocument(docId, filePath)
+    await deleteDocument(docId)
     setDocuments(prev => prev.filter(d => d.id !== docId))
     router.refresh()
   }
@@ -193,7 +193,7 @@ export function ContractCard({ contract, onEdit, onDelete }: ContractCardProps) 
             </Badge>
             {contract.monthly_payment && (
               <Badge variant="secondary" className="bg-navy-100 text-navy-700">
-                {contract.monthly_payment.toLocaleString('cs-CZ')} Kč/měsíc
+                {getPaymentLabel(contract)}
               </Badge>
             )}
             {contract.auto_renewal && (
@@ -296,7 +296,7 @@ export function ContractCard({ contract, onEdit, onDelete }: ContractCardProps) 
                       <Download className="w-3.5 h-3.5" />
                     </Button>
                     {doc.id !== 'original' && (
-                      <Button variant="ghost" size="icon-xs" onClick={() => handleDeleteDocument(doc.id, doc.file_path)} className="text-navy-400 hover:text-red-500 hover:bg-red-50">
+                      <Button variant="ghost" size="icon-xs" onClick={() => handleDeleteDocument(doc.id)} className="text-navy-400 hover:text-red-500 hover:bg-red-50">
                         <X className="w-3.5 h-3.5" />
                       </Button>
                     )}

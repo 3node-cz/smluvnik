@@ -3,6 +3,7 @@
 import { TrendingUp, FileText, AlertTriangle, CheckCircle } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardAction } from '@/components/ui/card'
 import type { Contract } from '@/lib/types/database'
+import { toMonthlyPayment } from '@/lib/types/database'
 
 interface DashboardStatsProps {
   contracts: Contract[]
@@ -10,7 +11,7 @@ interface DashboardStatsProps {
 
 export function DashboardStats({ contracts }: DashboardStatsProps) {
   const now = new Date()
-  const totalMonthly = contracts.reduce((sum, c) => sum + (c.monthly_payment || 0), 0)
+  const totalMonthly = contracts.reduce((sum, c) => sum + toMonthlyPayment(c), 0)
   const active = contracts.filter(c => !c.valid_until || new Date(c.valid_until) > now)
   const expiring = contracts.filter(c => {
     if (!c.valid_until) return false

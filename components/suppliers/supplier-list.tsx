@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Contract } from '@/lib/types/database'
+import { getPaymentLabel, toMonthlyPayment } from '@/lib/types/database'
 import { addSupplierNote, deleteSupplierNote } from '@/lib/actions/suppliers'
 import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
@@ -52,7 +53,7 @@ export function SupplierList({ contracts, initialNotes }: SupplierListProps) {
           acc[c.provider] = { provider: c.provider, contracts: [], totalMonthly: 0 }
         }
         acc[c.provider].contracts.push(c)
-        acc[c.provider].totalMonthly += c.monthly_payment || 0
+        acc[c.provider].totalMonthly += toMonthlyPayment(c)
         return acc
       },
       {} as Record<string, { provider: string; contracts: Contract[]; totalMonthly: number }>
@@ -228,7 +229,7 @@ export function SupplierList({ contracts, initialNotes }: SupplierListProps) {
                               <div className="flex items-center gap-3">
                                 {c.monthly_payment && (
                                   <span className="text-muted-foreground text-xs">
-                                    {c.monthly_payment.toLocaleString('cs-CZ')} Kč/měs
+                                    {getPaymentLabel(c)}
                                   </span>
                                 )}
                                 {c.valid_until && (

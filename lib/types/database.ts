@@ -53,6 +53,7 @@ export interface Contract {
   provider: string
   contract_number?: string
   monthly_payment?: number
+  payment_frequency?: 'monthly' | 'quarterly' | 'yearly'
   unit_price_low?: number
   unit_price_high?: number
   fixed_fee?: number
@@ -71,6 +72,29 @@ export interface Contract {
   gemini_extracted?: boolean
   created_at: string
   updated_at: string
+}
+
+export type PaymentFrequency = 'monthly' | 'quarterly' | 'yearly'
+
+const FREQUENCY_LABELS: Record<PaymentFrequency, string> = {
+  monthly: 'měs',
+  quarterly: 'čtvrt',
+  yearly: 'rok',
+}
+
+export function getPaymentLabel(contract: Pick<Contract, 'monthly_payment' | 'payment_frequency'>): string | null {
+  if (!contract.monthly_payment) return null
+  const freq = contract.payment_frequency || 'monthly'
+  return `${contract.monthly_payment.toLocaleString('cs-CZ')} Kč/${FREQUENCY_LABELS[freq]}`
+}
+
+export function toMonthlyPayment(contract: Pick<Contract, 'monthly_payment' | 'payment_frequency'>): number {
+  if (!contract.monthly_payment) return 0
+  switch (contract.payment_frequency) {
+    case 'quarterly': return contract.monthly_payment / 3
+    case 'yearly': return contract.monthly_payment / 12
+    default: return contract.monthly_payment
+  }
 }
 
 export interface Profile {

@@ -41,5 +41,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# mcp
+.mcp.json
+
 # screenshots
 .ios-simulator-mcp/

@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@/lib/supabase/server'
+import { createClient as createServiceClient } from '@supabase/supabase-js'
+
+const MAX_BASE64_SIZE = 10 * 1024 * 1024 // ~7.5 MB file (base64 overhead)
+const RATE_LIMIT_PER_HOUR = 30
 
 const VALID_CATEGORIES = [
   'energie', 'plyn', 'internet', 'tv', 'mobilni_tarif',
@@ -14,7 +18,8 @@ const responseSchema = {
     provider: { type: 'string', nullable: true, description: 'Název dodavatele/poskytovatele' },
     contract_number: { type: 'string', nullable: true, description: 'Číslo smlouvy' },
     category: { type: 'string', enum: [...VALID_CATEGORIES], description: 'Kategorie smlouvy' },
-    monthly_payment: { type: 'number', nullable: true, description: 'Měsíční platba v CZK' },
+    monthly_payment: { type: 'number', nullable: true, description: 'Částka platby v CZK' },
+    payment_frequency: { type: 'string', enum: ['monthly', 'quarterly', 'yearly'], description: 'Frekvence platby' },
     unit_price_low: { type: 'number', nullable: true, description: 'Cena za MWh (energie/plyn)' },
     fixed_fee: { type: 'number', nullable: true, description: 'Stálá platba (energie/plyn)' },
     valid_from: { type: 'string', nullable: true, description: 'Datum začátku ve formátu YYYY-MM-DD' },
@@ -27,19 +32,41 @@ const responseSchema = {
 }
 
 export async function POST(request: NextRequest) {
-  const supabase = createClient(
+  // Authenticate via server cookies — never trust client-supplied userId
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  const userId = user.id
+
+  // Service role client for ai_usage_log (bypasses RLS)
+  const serviceClient = createServiceClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
-  const { base64, mimeType, userId } = await request.json()
-
-  if (!userId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const { base64, mimeType } = await request.json()
 
   if (!base64 || !mimeType) {
     return NextResponse.json({ error: 'Missing data' }, { status: 400 })
+  }
+
+  // Body size limit
+  if (base64.length > MAX_BASE64_SIZE) {
+    return NextResponse.json({ error: 'File too large (max ~7.5 MB)' }, { status: 413 })
+  }
+
+  // Rate limiting via ai_usage_log
+  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
+  const { count } = await serviceClient
+    .from('ai_usage_log')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .gte('created_at', oneHourAgo)
+
+  if (count && count >= RATE_LIMIT_PER_HOUR) {
+    return NextResponse.json({ error: 'Příliš mnoho požadavků. Zkuste to za chvíli.' }, { status: 429 })
   }
 
   const apiKey = process.env.GOOGLE_AI_API_KEY
@@ -91,12 +118,13 @@ KATEGORIE - vyber JEDNU:
 - darovaci = darovací smlouva
 - ostatni = vše ostatní
 
-MĚSÍČNÍ PLATBA (monthly_payment):
-- Energie a plyn: výše zálohy uvedená ve smlouvě
-- Pojištění: roční pojistné děleno 12
-- Hypotéka a leasing: výše měsíční splátky
-- Nájem: výše měsíčního nájmu
-- Internet, TV, mobil: výše měsíčního paušálu
+PLATBA (monthly_payment + payment_frequency):
+- monthly_payment = částka jedné platby TAK JAK JE UVEDENA ve smlouvě (nepřepočítávej!)
+- payment_frequency = jak často se platí:
+  - monthly = měsíčně (zálohy, paušály, splátky, nájem)
+  - quarterly = čtvrtletně
+  - yearly = ročně (roční pojistné, roční předplatné)
+- Pokud frekvence není jasná, použij "monthly" jako výchozí
 
 SPECIÁLNĚ PRO ELEKTŘINU (kategorie energie):
 - unit_price_low = OBCHODNÍ cena za MWh S DPH
@@ -139,12 +167,12 @@ PRO OSTATNÍ KATEGORIE:
 
     if (!response.ok) {
       const err = await response.text()
-      await supabase.from('ai_usage_log').insert({
+      await serviceClient.from('ai_usage_log').insert({
         user_id: userId,
         success: false,
         error_message: `HTTP ${response.status}: ${err.substring(0, 200)}`
       })
-      return NextResponse.json({ error: err }, { status: response.status })
+      return NextResponse.json({ error: 'Chyba při zpracování dokumentu' }, { status: 502 })
     }
 
     const data = await response.json()
@@ -159,6 +187,12 @@ PRO OSTATNÍ KATEGORIE:
       // Validate category
       if (parsed.category && !VALID_CATEGORIES.includes(parsed.category)) {
         parsed.category = 'ostatni'
+      }
+
+      // Validate payment frequency
+      const validFrequencies = ['monthly', 'quarterly', 'yearly']
+      if (parsed.payment_frequency && !validFrequencies.includes(parsed.payment_frequency)) {
+        parsed.payment_frequency = 'monthly'
       }
 
       // Validate date formats
@@ -178,13 +212,13 @@ PRO OSTATNÍ KATEGORIE:
         }
       }
 
-      await supabase.from('ai_usage_log').insert({
+      await serviceClient.from('ai_usage_log').insert({
         user_id: userId,
         success: true
       })
       return NextResponse.json(parsed)
     } catch {
-      await supabase.from('ai_usage_log').insert({
+      await serviceClient.from('ai_usage_log').insert({
         user_id: userId,
         success: false,
         error_message: 'Nevalidní JSON od AI'
@@ -197,11 +231,11 @@ PRO OSTATNÍ KATEGORIE:
 
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Unknown error'
-    await supabase.from('ai_usage_log').insert({
+    await serviceClient.from('ai_usage_log').insert({
       user_id: userId,
       success: false,
       error_message: msg
     })
-    return NextResponse.json({ error: msg }, { status: 500 })
+    return NextResponse.json({ error: 'Chyba při zpracování dokumentu' }, { status: 500 })
   }
 }

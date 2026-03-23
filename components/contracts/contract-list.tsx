@@ -14,7 +14,7 @@ import { ContractCard } from '@/components/contracts/contract-card'
 import { ContractForm } from '@/components/contracts/contract-form'
 import { DashboardStats } from '@/components/dashboard/dashboard-stats'
 import type { Contract } from '@/lib/types/database'
-import { CONTRACT_CATEGORIES } from '@/lib/types/database'
+import { CONTRACT_CATEGORIES, getPaymentLabel, toMonthlyPayment } from '@/lib/types/database'
 
 interface ContractListProps {
   contracts: Contract[]
@@ -41,8 +41,8 @@ function exportContracts(contracts: Contract[], format: ExportFormat) {
   const rows = contracts.map(c => [
     c.provider,
     c.category,
-    c.monthly_payment ?? '',
-    c.monthly_payment ? c.monthly_payment * 12 : '',
+    c.monthly_payment ? `${c.monthly_payment} (${c.payment_frequency || 'monthly'})` : '',
+    toMonthlyPayment(c) ? Math.round(toMonthlyPayment(c) * 12) : '',
     c.valid_until ?? '',
     c.contract_number ?? '',
     c.notes ?? '',
@@ -69,7 +69,7 @@ function exportContracts(contracts: Contract[], format: ExportFormat) {
   }
 
   if (format === 'pdf') {
-    const totalMonthly = contracts.reduce((sum, c) => sum + (c.monthly_payment || 0), 0)
+    const totalMonthly = contracts.reduce((sum, c) => sum + toMonthlyPayment(c), 0)
     const html = `<!DOCTYPE html><html lang="cs"><head><meta charset="UTF-8"><title>Smluvník – export smluv</title><style>body{font-family:Arial,sans-serif;font-size:12px;color:#1a2744;margin:40px}h1{font-size:20px;margin-bottom:4px}p.meta{color:#666;font-size:11px;margin-bottom:20px}table{width:100%;border-collapse:collapse}th{background:#1a2744;color:white;padding:8px 10px;text-align:left;font-size:11px}td{padding:7px 10px;border-bottom:1px solid #e5e9f0;font-size:11px}tr:nth-child(even) td{background:#f5f7fa}.total{margin-top:16px;font-weight:bold;font-size:13px}</style></head><body><h1>Smluvník – přehled smluv</h1><p class="meta">Exportováno: ${new Date().toLocaleDateString('cs-CZ')} | Počet smluv: ${contracts.length}</p><table><thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join('')}</tr>`).join('')}</tbody></table><p class="total">Celkem měsíčně: ${totalMonthly.toLocaleString('cs-CZ')} Kč | Ročně: ${(totalMonthly * 12).toLocaleString('cs-CZ')} Kč</p></body></html>`
     const win = window.open('', '_blank')
     if (win) { win.document.write(html); win.document.close(); win.focus(); setTimeout(() => win.print(), 500) }
@@ -126,7 +126,7 @@ function ContractRow({ contract, onDelete, onEdit }: { contract: Contract; onDel
       </td>
       <td className="py-3 px-4">
         <span className="text-sm text-navy-700 font-medium">
-          {contract.monthly_payment ? `${contract.monthly_payment.toLocaleString('cs-CZ')} Kč/měs` : '\u2014'}
+          {getPaymentLabel(contract) || '\u2014'}
         </span>
       </td>
       <td className="py-3 px-4">
@@ -197,8 +197,8 @@ export function ContractList({ contracts, plan, totalCount }: ContractListProps)
         if (!b.valid_until) return -1
         return new Date(b.valid_until).getTime() - new Date(a.valid_until).getTime()
       }
-      case 'amount_desc': return (b.monthly_payment || 0) - (a.monthly_payment || 0)
-      case 'amount_asc':  return (a.monthly_payment || 0) - (b.monthly_payment || 0)
+      case 'amount_desc': return toMonthlyPayment(b) - toMonthlyPayment(a)
+      case 'amount_asc':  return toMonthlyPayment(a) - toMonthlyPayment(b)
       case 'name_asc':    return a.provider.localeCompare(b.provider, 'cs')
       default: return 0
     }
