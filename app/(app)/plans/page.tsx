@@ -105,7 +105,7 @@ export default function PlansPage() {
       <div className="bg-teal-50 border border-teal-200 rounded-2xl px-6 py-4 flex items-center gap-3">
         <span className="text-2xl">🎁</span>
         <div>
-          <p className="font-semibold text-teal-800">14 dní zdarma u každého plánu</p>
+          <p className="font-semibold text-teal-800">7 dní zdarma u každého plánu</p>
           <p className="text-sm text-teal-600">Vyzkoušejte bez závazků a bez zadání platební karty.</p>
         </div>
       </div>
@@ -142,7 +142,7 @@ export default function PlansPage() {
                       <span className="text-navy-400 text-sm">{plan.period}</span>
                     </div>
                     <p className="text-xs text-teal-600 mt-1">nebo {plan.yearlyPrice} Kč/rok — ušetříte {plan.yearlySaving} Kč</p>
-                    <p className="text-xs text-navy-400 mt-1">14 dní zdarma, pak se teprve účtuje</p>
+                    <p className="text-xs text-navy-400 mt-1">7 dní zdarma, pak se teprve účtuje</p>
                   </div>
 
                   <ul className="space-y-2 mb-6">
