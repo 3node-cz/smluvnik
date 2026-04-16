@@ -313,16 +313,15 @@ export function LoginForm() {
             <DialogTitle>Podmínky použití</DialogTitle>
           </DialogHeader>
           <div className="text-sm text-navy-600 space-y-4">
-            <p><strong>Provozovatel:</strong> Petr Sziliczai, Palackého 508, 739 61 Třinec, IČO: 73264482</p>
+            <p><strong>Provozovatel:</strong> Petr Sziliczai, IČO: 73264482, info@smluvnik.cz</p>
             <p>Smluvník je webová aplikace pro evidenci smluv a dokumentů. Registrací souhlasíte s těmito podmínkami.</p>
-            <p><strong>Zkušební období:</strong> Po registraci získáte plán Střední na 14 dní zdarma. Po uplynutí dojde k omezení na plán Základ.</p>
-            <p><strong>Předplatné:</strong> Ceny jsou uvedeny na stránce Plány. Předplatné se automaticky neobnovuje.</p>
+            <p><strong>Zkušební období:</strong> 7 dní zdarma bez zadání platební karty.</p>
             <p><strong>Vaše povinnosti:</strong> Nahrávejte pouze dokumenty ke kterým máte oprávnění. Nesdílejte přístupové údaje. Nepoužívejte službu k nelegálním účelům.</p>
-            <p><strong>Omezení odpovědnosti:</strong> Výsledky AI extrakce jsou orientační – vždy je zkontrolujte. Neodpovídáme za škody způsobené nedostupností služby.</p>
-            <p><strong>Data při ukončení:</strong> Podmínky uchovávání dat po ukončení předplatného jsou uvedeny v zásadách ochrany osobních údajů.</p>
+            <p><strong>Omezení odpovědnosti:</strong> Výsledky AI extrakce jsou orientační – vždy je zkontrolujte. Smluvník neposkytuje právní poradenství a neodpovídá za škody vzniklé promeškáním termínů nebo na základě rozhodnutí učiněných dle informací v aplikaci.</p>
+            <p><strong>Ukončení účtu:</strong> Kdykoli v nastavení. Data smazána do 30 dní.</p>
             <p><strong>Změny podmínek:</strong> O změnách vás informujeme e-mailem minimálně 14 dní předem.</p>
             <p><strong>Rozhodné právo:</strong> Česká republika.</p>
-            <p className="text-xs text-navy-400">Platné od 1. března 2026</p>
+            <p className="text-xs text-navy-400">Platné od 1. 5. 2026 · <a href="/terms" target="_blank" className="underline hover:text-teal-600">Celé znění</a></p>
           </div>
           <DialogFooter>
             <Button onClick={() => setShowTerms(false)} className="w-full bg-teal-600 hover:bg-teal-700 text-white">Zavřít</Button>
