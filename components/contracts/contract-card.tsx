@@ -64,10 +64,12 @@ export function ContractCard({ contract, onEdit, onDelete }: ContractCardProps) 
   const loadDocuments = async () => {
     setDocsLoading(true)
     const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
     const { data } = await supabase
       .from('contract_documents')
       .select('*')
       .eq('contract_id', contract.id)
+      .eq('user_id', user?.id ?? '')
       .order('created_at', { ascending: false })
 
     const additionalDocs = data || []
@@ -140,7 +142,13 @@ export function ContractCard({ contract, onEdit, onDelete }: ContractCardProps) 
       const { data: { user } } = await supabase.auth.getUser()
       const userId = user?.id
       if (!userId) return
-      const ext = file.name.split('.').pop()
+      const ALLOWED_EXTENSIONS = ['pdf', 'jpg', 'jpeg', 'png', 'webp', 'heic', 'doc', 'docx']
+      const ext = file.name.split('.').pop()?.toLowerCase()
+      if (!ext || !ALLOWED_EXTENSIONS.includes(ext)) {
+        toast.error('Nepodporovaný formát. Povoleny jsou: PDF, JPG, PNG, WEBP, HEIC, DOC, DOCX')
+        setUploading(false)
+        return
+      }
       const path = `${userId}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
       const { error: uploadError } = await supabase.storage.from('contracts').upload(path, file, {
         contentType: file.type,

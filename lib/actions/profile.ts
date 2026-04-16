@@ -51,9 +51,9 @@ export async function deleteAccount() {
 
   await supabase.from('contracts').delete().eq('user_id', user.id)
   await supabase.from('profiles').delete().eq('id', user.id)
-  await supabase.auth.signOut()
 
-  // Smazat auth uživatele přes service role (RLS to neumožňuje přes běžného klienta)
+  // Smazat auth uživatele přes service role — zároveň ukončí všechny sessions
+  // (signOut se nevolá zvlášť, deleteUser session ukončí automaticky)
   const serviceClient = createServiceClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!

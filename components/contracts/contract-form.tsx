@@ -168,7 +168,9 @@ export function ContractForm({ open, onOpenChange, initial, onSaved, totalStorag
   const uploadFile = async (userId: string): Promise<{ path: string; name: string; size: number; type: string } | null> => {
     if (!selectedFile) return null
     const supabase = createClient()
-    const ext = selectedFile.name.split('.').pop()
+    const ALLOWED_EXTENSIONS = ['pdf', 'jpg', 'jpeg', 'png', 'webp', 'heic', 'doc', 'docx']
+    const ext = selectedFile.name.split('.').pop()?.toLowerCase()
+    if (!ext || !ALLOWED_EXTENSIONS.includes(ext)) throw new Error('Nepodporovaný formát souboru')
     const path = `${userId}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
     const { error } = await supabase.storage.from('contracts').upload(path, selectedFile, {
       contentType: selectedFile.type,

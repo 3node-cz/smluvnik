@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useApp } from '@/lib/context'
+import { adminUpdateProfile, adminSaveSettings } from '@/lib/actions/admin'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -223,24 +224,28 @@ export function AdminPanel() {
   const saveEdit = async () => {
     if (!editingUser) return
     setEditSaving(true)
-    await supabase.from('profiles').update({
-      plan: editData.plan,
-      role: editData.role,
-      custom_contract_limit: editData.custom_contract_limit || null,
-      custom_storage_mb: editData.custom_storage_mb || null,
-      notes: editData.notes || null,
-      ai_until: editData.ai_until || null,
-      addon_ai: editData.addon_ai ?? false,
-      addon_storage_contracts: editData.addon_storage_contracts ?? false,
-      subscription_type: editData.subscription_type || null,
-      subscription_expires_at: editData.subscription_expires_at || null,
-    }).eq('id', editingUser.id)
-
-    setUsers(prev => prev.map(u => u.id === editingUser.id ? { ...u, ...editData } : u))
-    setEditSaving(false)
-    setEditSaved(true)
-    router.refresh()
-    setTimeout(() => { setEditSaved(false); closeEdit() }, 1200)
+    try {
+      await adminUpdateProfile(editingUser.id, {
+        plan: editData.plan,
+        role: editData.role,
+        custom_contract_limit: editData.custom_contract_limit || null,
+        custom_storage_mb: editData.custom_storage_mb || null,
+        notes: editData.notes || null,
+        ai_until: editData.ai_until || null,
+        addon_ai: editData.addon_ai ?? false,
+        addon_storage_contracts: editData.addon_storage_contracts ?? false,
+        subscription_type: editData.subscription_type || null,
+        subscription_expires_at: editData.subscription_expires_at || null,
+      })
+      setUsers(prev => prev.map(u => u.id === editingUser.id ? { ...u, ...editData } : u))
+      setEditSaved(true)
+      router.refresh()
+      setTimeout(() => { setEditSaved(false); closeEdit() }, 1200)
+    } catch (err) {
+      console.error('Chyba při ukládání:', err)
+    } finally {
+      setEditSaving(false)
+    }
   }
 
   const grantAi = (days: number) => {
@@ -253,15 +258,17 @@ export function AdminPanel() {
 
   const saveAllSettings = async () => {
     setSettingsSaving(true)
-    await Promise.all(
-      Object.entries(settings).map(([key, value]) =>
-        supabase.from('app_settings').upsert({ key, value })
-      )
-    )
-    setSettingsSaving(false)
-    setSettingsSaved(true)
-    router.refresh()
-    setTimeout(() => setSettingsSaved(false), 2000)
+    try {
+      const entries = Object.entries(settings).map(([key, value]) => ({ key, value }))
+      await adminSaveSettings(entries)
+      setSettingsSaved(true)
+      router.refresh()
+      setTimeout(() => setSettingsSaved(false), 2000)
+    } catch (err) {
+      console.error('Chyba při ukládání nastavení:', err)
+    } finally {
+      setSettingsSaving(false)
+    }
   }
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
