@@ -352,10 +352,14 @@ export function LoginForm() {
       </Dialog>
 
       <div className="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md">
-        {mode !== 'login' && (
+        {mode !== 'login' ? (
           <Button variant="ghost" onClick={() => { setMode('login'); setError(''); setSuccessMsg('') }} className="flex items-center gap-1 text-navy-500 text-sm mb-6 hover:text-navy-800 px-0">
             <ArrowLeft className="w-4 h-4" /> Zpět
           </Button>
+        ) : (
+          <a href="/" className="flex items-center gap-1 text-navy-400 hover:text-navy-700 text-sm mb-6 transition-colors">
+            <ArrowLeft className="w-4 h-4" /> Zpět na Smluvník
+          </a>
         )}
 
         <h2 className="text-2xl font-bold text-navy-900 mb-1">
@@ -474,6 +478,11 @@ export function LoginForm() {
             <Button variant="link" onClick={() => { setMode('register'); setError('') }} className="text-teal-600 font-semibold h-auto p-0">Zaregistrujte se</Button>
           </p>
         )}
+
+        <div className="mt-8 pt-6 border-t border-navy-100 flex justify-center gap-4 text-xs text-navy-400">
+          <a href="/terms" target="_blank" className="hover:text-teal-600 hover:underline transition-colors">Obchodní podmínky</a>
+          <a href="/privacy" target="_blank" className="hover:text-teal-600 hover:underline transition-colors">Ochrana osobních údajů</a>
+        </div>
       </div>
     </>
   )
