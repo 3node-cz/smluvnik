@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
+import { GoogleAuth } from 'google-auth-library'
 
 const MAX_BASE64_SIZE = 10 * 1024 * 1024 // ~7.5 MB file (base64 overhead)
 const RATE_LIMIT_PER_HOUR = 30
@@ -69,9 +70,20 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Příliš mnoho požadavků. Zkuste to za chvíli.' }, { status: 429 })
   }
 
-  const apiKey = process.env.GOOGLE_AI_API_KEY
-  if (!apiKey) {
-    return NextResponse.json({ error: 'GOOGLE_AI_API_KEY not configured' }, { status: 500 })
+  const projectId = process.env.GOOGLE_CLOUD_PROJECT
+  const location = process.env.VERTEX_LOCATION ?? 'europe-west4'
+  if (!projectId) {
+    return NextResponse.json({ error: 'GOOGLE_CLOUD_PROJECT not configured' }, { status: 500 })
+  }
+
+  const credentialsJson = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON
+  const auth = new GoogleAuth({
+    scopes: 'https://www.googleapis.com/auth/cloud-platform',
+    ...(credentialsJson ? { credentials: JSON.parse(credentialsJson) } : {}),
+  })
+  const accessToken = await auth.getAccessToken()
+  if (!accessToken) {
+    return NextResponse.json({ error: 'Failed to obtain Google access token' }, { status: 500 })
   }
 
   const prompt = `Jsi expert na analýzu smluv. Analyzuj přiložený dokument a extrahuj údaje.
@@ -144,12 +156,16 @@ PRO OSTATNÍ KATEGORIE:
 
   try {
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/gemini-2.5-flash:generateContent`,
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+        },
         body: JSON.stringify({
           contents: [{
+            role: 'user',
             parts: [
               { inline_data: { mime_type: mimeType, data: base64 } },
               { text: prompt }
