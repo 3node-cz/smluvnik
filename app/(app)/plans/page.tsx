@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useApp } from '@/lib/context'
+import { toast } from 'sonner'
 
 const plans = [
   {
@@ -164,6 +165,7 @@ export default function PlansPage() {
                     disabled={isCurrent}
                     variant={plan.highlight ? 'default' : 'secondary'}
                     className="w-full justify-center"
+                    onClick={() => !isCurrent && toast.info('Platební brána bude brzy k dispozici. Napište nám na info@smluvnik.cz.')}
                   >
                     {isCurrent ? 'Aktuální plán' : 'Začít zdarma'}
                   </Button>

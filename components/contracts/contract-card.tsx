@@ -177,6 +177,7 @@ export function ContractCard({ contract, onEdit, onDelete }: ContractCardProps) 
   }
 
   return (
+    <>
     <Card className={`rounded-2xl p-5 hover:shadow-md transition-all duration-200 ${isExpired ? 'ring-red-200' : isExpiring ? 'ring-orange-200' : ''}`}>
       <div className="flex items-start gap-4">
         <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-xl flex-shrink-0 ${catDef?.color || 'bg-navy-100'}`}>
@@ -327,7 +328,7 @@ export function ContractCard({ contract, onEdit, onDelete }: ContractCardProps) 
       )}
     </Card>
 
-    <AlertDialog open={!!deleteDocId} onOpenChange={open => !open && setDeleteDocId(null)}>
+    <AlertDialog open={!!deleteDocId} onOpenChange={(isOpen) => { if (!isOpen) setDeleteDocId(null) }}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Smazat dokument?</AlertDialogTitle>
@@ -343,5 +344,6 @@ export function ContractCard({ contract, onEdit, onDelete }: ContractCardProps) 
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+    </>
   )
 }

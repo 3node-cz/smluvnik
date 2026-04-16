@@ -22,6 +22,7 @@ interface ContractFormProps {
   onOpenChange: (open: boolean) => void
   initial?: Contract | null
   onSaved: () => void
+  totalStorageUsed?: number
 }
 
 const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'image/heic', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
@@ -42,7 +43,7 @@ async function fileToBase64(file: File): Promise<string> {
   })
 }
 
-export function ContractForm({ open, onOpenChange, initial, onSaved }: ContractFormProps) {
+export function ContractForm({ open, onOpenChange, initial, onSaved, totalStorageUsed = 0 }: ContractFormProps) {
   const router = useRouter()
   const { profile, appSettings } = useApp()
   const plan = profile.plan || 'free'
@@ -97,7 +98,6 @@ export function ContractForm({ open, onOpenChange, initial, onSaved }: ContractF
   const isFreePlan = plan === 'free'
 
   // Storage calculation for free plan
-  const totalStorageUsed = 0 // Will be passed differently if needed
   const usedWithoutCurrent = totalStorageUsed - (initial?.file_size || 0)
   const remainingStorage = STORAGE_LIMIT_FREE - usedWithoutCurrent
   const storagePercent = Math.min(100, Math.round((usedWithoutCurrent / STORAGE_LIMIT_FREE) * 100))

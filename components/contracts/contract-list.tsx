@@ -4,6 +4,7 @@ import { useState, useTransition, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Search, ArrowUpDown, Download, LayoutGrid, List, FileText, Calendar, RefreshCw, Lock, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { Input } from '@/components/ui/input'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
@@ -171,6 +172,9 @@ export function ContractList({ contracts, plan, totalCount }: ContractListProps)
   const [deleteId, setDeleteId] = useState<string | null>(null)
 
   const canExport = plan === 'pro' || plan === 'business'
+  const freeContractLimit = appSettings.free_contracts_limit ? parseInt(appSettings.free_contracts_limit) : 5
+  const isFreePlan = plan === 'free'
+  const totalStorageUsed = contracts.reduce((sum, c) => sum + (c.file_size || 0), 0)
 
   const categoriesInUse = ['vse', ...new Set(contracts.map(c => c.category))]
 
@@ -225,6 +229,10 @@ export function ContractList({ contracts, plan, totalCount }: ContractListProps)
   }
 
   const handleAddNew = () => {
+    if (isFreePlan && contracts.length >= freeContractLimit) {
+      toast.error(`Bezplatný plán umožňuje max. ${freeContractLimit} smluv. Přejděte na plán Jistota pro neomezený počet.`)
+      return
+    }
     setEditingContract(null)
     setShowForm(true)
   }
@@ -395,10 +403,11 @@ export function ContractList({ contracts, plan, totalCount }: ContractListProps)
         onOpenChange={setShowForm}
         initial={editingContract}
         onSaved={handleFormSaved}
+        totalStorageUsed={totalStorageUsed}
       />
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deleteId} onOpenChange={open => !open && setDeleteId(null)}>
+      <AlertDialog open={!!deleteId} onOpenChange={(isOpen) => { if (!isOpen) setDeleteId(null) }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Smazat smlouvu?</AlertDialogTitle>
