@@ -336,15 +336,15 @@ export function LoginForm() {
             <DialogTitle>Zásady ochrany osobních údajů</DialogTitle>
           </DialogHeader>
           <div className="text-sm text-navy-600 space-y-4">
-            <p><strong>Správce:</strong> Petr Sziliczai, Palackého 508, 739 61 Třinec, IČO: 73264482, info@smluvnik.cz</p>
-            <p><strong>Co zpracováváme:</strong> E-mail, jméno, data smluv které zadáte, provozní logy. Platební údaje zpracovává výhradně Stripe.</p>
-            <p><strong>Proč:</strong> Provoz služby, zasílání upozornění na expirace, informace o předplatném.</p>
-            <p><strong>Příjemci:</strong> Supabase (databáze, EU), Vercel (hosting), Resend (emaily), Stripe (platby), Google Gemini (AI extrakce).</p>
-            <p><strong>Doba uchovávání:</strong> Po dobu trvání účtu. Po zrušení účtu smazáno do 30 dní. Účetní doklady 5 let dle zákona.</p>
-            <p><strong>Vaše práva:</strong> Přístup, oprava, výmaz, přenositelnost, omezení zpracování. Žádosti na info@smluvnik.cz, odpovíme do 30 dní.</p>
-            <p><strong>Cookies:</strong> Pouze technické cookies nezbytné pro přihlášení. Žádné reklamní ani sledovací cookies.</p>
+            <p><strong>Správce:</strong> Petr Sziliczai, IČO: 73264482, info@smluvnik.cz</p>
+            <p><strong>Co zpracováváme:</strong> E-mail, jméno, data smluv které zadáte, provozní logy.</p>
+            <p><strong>Proč:</strong> Provoz služby, zasílání upozornění na expirace.</p>
+            <p><strong>Příjemci:</strong> Supabase (databáze, EU), Vercel (hosting), Resend (emaily), Google Vertex AI (AI extrakce, EU).</p>
+            <p><strong>Doba uchovávání:</strong> Po dobu trvání účtu. Po zrušení účtu smazáno do 30 dní.</p>
+            <p><strong>Vaše práva:</strong> Přístup, oprava, výmaz, přenositelnost. Žádosti na info@smluvnik.cz, odpovíme do 30 dní.</p>
+            <p><strong>Cookies:</strong> Pouze technické cookies nezbytné pro přihlášení.</p>
             <p><strong>Stížnosti:</strong> Úřad pro ochranu osobních údajů (uoou.cz).</p>
-            <p className="text-xs text-navy-400">Platné od 1. března 2026</p>
+            <p className="text-xs text-navy-400">Platné od 1. 5. 2026 · <a href="/privacy" target="_blank" className="underline hover:text-teal-600">Celé znění</a></p>
           </div>
           <DialogFooter>
             <Button onClick={() => setShowPrivacy(false)} className="w-full bg-teal-600 hover:bg-teal-700 text-white">Zavřít</Button>
