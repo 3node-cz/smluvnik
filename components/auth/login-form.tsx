@@ -321,7 +321,7 @@ export function LoginForm() {
             <p><strong>Ukončení účtu:</strong> Kdykoli v nastavení. Data smazána do 30 dní.</p>
             <p><strong>Změny podmínek:</strong> O změnách vás informujeme e-mailem minimálně 14 dní předem.</p>
             <p><strong>Rozhodné právo:</strong> Česká republika.</p>
-            <p className="text-xs text-navy-400">Platné od 1. 5. 2026 · <a href="/terms" target="_blank" className="underline hover:text-teal-600">Celé znění</a></p>
+            <p className="text-xs text-navy-400">Platné od 16. 4. 2026 · <a href="/terms" target="_blank" className="underline hover:text-teal-600">Celé znění</a></p>
           </div>
           <DialogFooter>
             <Button onClick={() => setShowTerms(false)} className="w-full bg-teal-600 hover:bg-teal-700 text-white">Zavřít</Button>
@@ -343,7 +343,7 @@ export function LoginForm() {
             <p><strong>Vaše práva:</strong> Přístup, oprava, výmaz, přenositelnost. Žádosti na info@smluvnik.cz, odpovíme do 30 dní.</p>
             <p><strong>Cookies:</strong> Pouze technické cookies nezbytné pro přihlášení.</p>
             <p><strong>Stížnosti:</strong> Úřad pro ochranu osobních údajů (uoou.cz).</p>
-            <p className="text-xs text-navy-400">Platné od 1. 5. 2026 · <a href="/privacy" target="_blank" className="underline hover:text-teal-600">Celé znění</a></p>
+            <p className="text-xs text-navy-400">Platné od 16. 4. 2026 · <a href="/privacy" target="_blank" className="underline hover:text-teal-600">Celé znění</a></p>
           </div>
           <DialogFooter>
             <Button onClick={() => setShowPrivacy(false)} className="w-full bg-teal-600 hover:bg-teal-700 text-white">Zavřít</Button>

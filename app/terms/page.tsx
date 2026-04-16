@@ -15,7 +15,7 @@ export default function TermsPage() {
         </Link>
 
         <h1 className="text-3xl font-bold text-navy-900 mb-2">Obchodní podmínky</h1>
-        <p className="text-navy-400 text-sm mb-8">Platné od 1. 5. 2026</p>
+        <p className="text-navy-400 text-sm mb-8">Platné od 16. 4. 2026</p>
 
         <section className="mb-8">
           <h2 className="text-xl font-semibold text-navy-900 mb-3">1. Provozovatel a kontakt</h2>
@@ -49,10 +49,10 @@ export default function TermsPage() {
         <section className="mb-8">
           <h2 className="text-xl font-semibold text-navy-900 mb-3">4. Plány a zkušební období</h2>
           <ul className="list-disc list-inside text-navy-700 space-y-2 leading-relaxed">
-            <li>Služba je v současné době poskytována zdarma v rámci beta testování.</li>
-            <li>Placené plány budou zavedeny v budoucnu; o jejich spuštění budete informováni e-mailem s předstihem nejméně 30 dní.</li>
+            <li>Služba je dostupná ve bezplatném plánu (Start) s omezenou funkcionalitou.</li>
+            <li>Placené plány (Jistota, Business) rozšiřují dostupné funkce; aktuální ceník je uveden na stránce Plány.</li>
             <li>Zkušební období u placených plánů trvá 7 dní zdarma bez nutnosti zadání platební karty.</li>
-            <li>Provozovatel si vyhrazuje právo změnit rozsah bezplatného plánu. O podstatných změnách budou uživatelé informováni e-mailem.</li>
+            <li>Provozovatel si vyhrazuje právo změnit rozsah a ceny plánů. O podstatných změnách budou uživatelé informováni e-mailem nejméně 30 dní předem.</li>
           </ul>
         </section>
 

@@ -15,7 +15,7 @@ export default function PrivacyPage() {
         </Link>
 
         <h1 className="text-3xl font-bold text-navy-900 mb-2">Zásady ochrany osobních údajů</h1>
-        <p className="text-navy-400 text-sm mb-8">Platné od 1. 5. 2026</p>
+        <p className="text-navy-400 text-sm mb-8">Platné od 16. 4. 2026</p>
 
         <section className="mb-8">
           <h2 className="text-xl font-semibold text-navy-900 mb-3">1. Správce osobních údajů</h2>

@@ -47,10 +47,23 @@ export async function POST(request: NextRequest) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
-  const { base64, mimeType } = await request.json()
+  let base64: string, mimeType: string
+  try {
+    const body = await request.json()
+    base64 = body.base64
+    mimeType = body.mimeType
+  } catch {
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+  }
 
   if (!base64 || !mimeType) {
     return NextResponse.json({ error: 'Missing data' }, { status: 400 })
+  }
+
+  // Whitelist povolených MIME typů
+  const ALLOWED_MIME_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif']
+  if (!ALLOWED_MIME_TYPES.includes(mimeType)) {
+    return NextResponse.json({ error: 'Nepodporovaný typ souboru' }, { status: 400 })
   }
 
   // Body size limit
