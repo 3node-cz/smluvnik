@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { createClient } from '@/lib/supabase/client'
 import { deleteDocument } from '@/lib/actions/documents'
 import type { Contract } from '@/lib/types/database'
@@ -32,6 +33,7 @@ export function ContractCard({ contract, onEdit, onDelete }: ContractCardProps) 
   const [documents, setDocuments] = useState<ContractDocument[]>([])
   const [docsLoading, setDocsLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [deleteDocId, setDeleteDocId] = useState<string | null>(null)
   const uploadRef = useRef<HTMLInputElement>(null)
 
   const catDef = CONTRACT_CATEGORIES.find(c => c.value === contract.category)
@@ -118,11 +120,16 @@ export function ContractCard({ contract, onEdit, onDelete }: ContractCardProps) 
     }
   }
 
-  const handleDeleteDocument = async (docId: string) => {
+  const handleDeleteDocument = (docId: string) => {
     if (docId === 'original') return
-    if (!window.confirm('Smazat tento dokument?')) return
-    await deleteDocument(docId)
-    setDocuments(prev => prev.filter(d => d.id !== docId))
+    setDeleteDocId(docId)
+  }
+
+  const confirmDeleteDocument = async () => {
+    if (!deleteDocId) return
+    await deleteDocument(deleteDocId)
+    setDocuments(prev => prev.filter(d => d.id !== deleteDocId))
+    setDeleteDocId(null)
     router.refresh()
   }
 
@@ -130,8 +137,8 @@ export function ContractCard({ contract, onEdit, onDelete }: ContractCardProps) 
     setUploading(true)
     try {
       const supabase = createClient()
-      const { data: { session } } = await supabase.auth.getSession()
-      const userId = session?.user?.id
+      const { data: { user } } = await supabase.auth.getUser()
+      const userId = user?.id
       if (!userId) return
       const ext = file.name.split('.').pop()
       const path = `${userId}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
@@ -319,5 +326,22 @@ export function ContractCard({ contract, onEdit, onDelete }: ContractCardProps) 
         </div>
       )}
     </Card>
+
+    <AlertDialog open={!!deleteDocId} onOpenChange={open => !open && setDeleteDocId(null)}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Smazat dokument?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Tato akce je nevratná. Dokument bude trvale smazán.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Zrušit</AlertDialogCancel>
+          <AlertDialogAction onClick={confirmDeleteDocument} className="bg-red-600 hover:bg-red-700 text-white">
+            Smazat
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   )
 }

@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Search, ArrowUpDown, Download, LayoutGrid, List, FileText, Calendar, RefreshCw, Lock, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { Input } from '@/components/ui/input'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
@@ -167,6 +168,7 @@ export function ContractList({ contracts, plan, totalCount }: ContractListProps)
   const [showForm, setShowForm] = useState(false)
   const [editingContract, setEditingContract] = useState<Contract | null>(null)
   const [isPending, startTransition] = useTransition()
+  const [deleteId, setDeleteId] = useState<string | null>(null)
 
   const canExport = plan === 'pro' || plan === 'business'
 
@@ -210,9 +212,14 @@ export function ContractList({ contracts, plan, totalCount }: ContractListProps)
   }
 
   const handleDelete = (id: string) => {
-    if (!window.confirm('Opravdu chcete smazat tuto smlouvu?')) return
+    setDeleteId(id)
+  }
+
+  const confirmDelete = () => {
+    if (!deleteId) return
     startTransition(async () => {
-      await deleteContract(id)
+      await deleteContract(deleteId)
+      setDeleteId(null)
       router.refresh()
     })
   }
@@ -389,6 +396,24 @@ export function ContractList({ contracts, plan, totalCount }: ContractListProps)
         initial={editingContract}
         onSaved={handleFormSaved}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteId} onOpenChange={open => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Smazat smlouvu?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tato akce je nevratná. Smlouva a všechny její dokumenty budou trvale smazány.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Zrušit</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700 text-white">
+              Smazat
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Camera, Sparkles, Loader, AlertCircle, FileText, File, X } from 'lucide-react'
 import { toast } from 'sonner'
@@ -113,11 +113,26 @@ export function ContractForm({ open, onOpenChange, initial, onSaved }: ContractF
     }
     setSelectedFile(file)
     if (file.type.startsWith('image/')) {
-      setFilePreview(URL.createObjectURL(file))
+      setFilePreview(prev => {
+        if (prev) URL.revokeObjectURL(prev)
+        return URL.createObjectURL(file)
+      })
     } else {
-      setFilePreview(null)
+      setFilePreview(prev => {
+        if (prev) URL.revokeObjectURL(prev)
+        return null
+      })
     }
   }
+
+  useEffect(() => {
+    return () => {
+      setFilePreview(prev => {
+        if (prev) URL.revokeObjectURL(prev)
+        return null
+      })
+    }
+  }, [])
 
   const handleGeminiExtract = async () => {
     if (!selectedFile) return
@@ -173,8 +188,8 @@ export function ContractForm({ open, onOpenChange, initial, onSaved }: ContractF
     setLoading(true)
     try {
       const supabase = createClient()
-      const { data: { session } } = await supabase.auth.getSession()
-      const userId = session?.user?.id
+      const { data: { user } } = await supabase.auth.getUser()
+      const userId = user?.id
       if (!userId) throw new Error('Not authenticated')
 
       let fileData: Record<string, unknown> = {}
