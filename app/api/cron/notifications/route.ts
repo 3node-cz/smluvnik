@@ -59,15 +59,24 @@ export async function GET(request: NextRequest) {
 
     const profileMap = new Map(profiles?.map(p => [p.id, p]) || [])
 
-    // Batch: fetch today's notification_log entries to skip duplicates
+    // Milníky upozornění — email se pošle jen přesně v tyto dny před expirací
+    const NOTIFICATION_MILESTONES = [45, 14, 3]
+
+    // Batch: fetch existing notification_log for these contracts (all time, not just today)
     const contractIds = contracts.map(c => c.id)
     const { data: existingLogs } = await supabase
       .from('notification_log')
-      .select('contract_id')
+      .select('contract_id, days_before')
       .in('contract_id', contractIds)
-      .gte('sent_at', today.toISOString())
 
-    const alreadySentSet = new Set(existingLogs?.map(l => l.contract_id) || [])
+    // Map: contract_id -> Set of already sent milestones
+    const sentMilestonesMap = new Map<string, Set<number>>()
+    for (const log of existingLogs || []) {
+      if (!sentMilestonesMap.has(log.contract_id)) {
+        sentMilestonesMap.set(log.contract_id, new Set())
+      }
+      sentMilestonesMap.get(log.contract_id)!.add(log.days_before)
+    }
 
     const categoryMap = new Map(CONTRACT_CATEGORIES.map(c => [c.value, c.label]))
     const notificationsSent: string[] = []
@@ -76,13 +85,16 @@ export async function GET(request: NextRequest) {
     for (const contract of contracts) {
       const expiryDate = new Date(contract.valid_until)
       const daysUntilExpiry = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
-      const threshold = contract.notification_days_before ?? 45
 
-      // Only notify if within threshold and not already expired
-      if (daysUntilExpiry <= 0 || daysUntilExpiry > threshold) continue
+      // Přeskočit vypršené nebo příliš vzdálené smlouvy
+      if (daysUntilExpiry <= 0) continue
 
-      // Skip if already sent today
-      if (alreadySentSet.has(contract.id)) continue
+      // Zkontrolovat zda dnešní počet dní odpovídá některému milníku
+      if (!NOTIFICATION_MILESTONES.includes(daysUntilExpiry)) continue
+
+      // Přeskočit pokud pro tento milník už bylo upozornění odesláno
+      const sentMilestones = sentMilestonesMap.get(contract.id)
+      if (sentMilestones?.has(daysUntilExpiry)) continue
 
       const profile = profileMap.get(contract.user_id)
       const sendTo = contract.notification_email || profile?.notification_email || profile?.email
@@ -96,7 +108,6 @@ export async function GET(request: NextRequest) {
         contractNumber: contract.contract_number,
         validUntil: contract.valid_until,
         daysUntilExpiry,
-        threshold,
       })
 
       const emailRes = await fetch('https://api.resend.com/emails', {
@@ -108,7 +119,9 @@ export async function GET(request: NextRequest) {
         body: JSON.stringify({
           from: fromEmail,
           to: sendTo,
-          subject: `Smlouva „${contract.provider}" vyprší za ${daysUntilExpiry} dní`,
+          subject: daysUntilExpiry === 3
+            ? `⚠️ Smlouva „${contract.provider}" vyprší za 3 dny`
+            : `Smlouva „${contract.provider}" vyprší za ${daysUntilExpiry} dní`,
           html: emailHtml,
         }),
       })
@@ -157,9 +170,8 @@ function buildEmailHtml(params: {
   contractNumber: string | null
   validUntil: string
   daysUntilExpiry: number
-  threshold: number
 }) {
-  const { provider, category, contractNumber, validUntil, daysUntilExpiry, threshold } = params
+  const { provider, category, contractNumber, validUntil, daysUntilExpiry } = params
   const formattedDate = new Date(validUntil).toLocaleDateString('cs-CZ')
   const safeProvider = escapeHtml(provider)
   const safeCategory = escapeHtml(category)
@@ -188,16 +200,16 @@ function buildEmailHtml(params: {
 <body>
   <div class="container">
     <div class="header">
-      <h1>Smluvnik</h1>
-      <p>Sprava smluv a dokumentu</p>
+      <h1>Smluvník</h1>
+      <p>Správa smluv a dokumentů</p>
     </div>
     <div class="body">
-      <h2 style="color: #102a43; margin-top: 0;">Upozorneni na expiraci smlouvy</h2>
-      <p style="color: #486581;">Jedna z vasich smluv brzy vyprsi. Doporucujeme zkontrolovat podminky a pripadne obnovit smlouvu.</p>
+      <h2 style="color: #102a43; margin-top: 0;">Upozornění na expiraci smlouvy</h2>
+      <p style="color: #486581;">Jedna z vašich smluv brzy vyprší. Doporučujeme zkontrolovat podmínky a případně obnovit smlouvu.</p>
 
       <div class="alert-box">
-        <div class="days">${daysUntilExpiry} dni</div>
-        <div style="color: #9a3412; font-size: 14px;">do vyprseni smlouvy</div>
+        <div class="days">${daysUntilExpiry} ${daysUntilExpiry === 3 ? 'dny' : 'dní'}</div>
+        <div style="color: #9a3412; font-size: 14px;">do vypršení smlouvy</div>
       </div>
 
       <div>
@@ -211,7 +223,7 @@ function buildEmailHtml(params: {
         </div>
         ${safeContractNumber ? `
         <div class="detail-row">
-          <span class="label">Cislo smlouvy</span>
+          <span class="label">Číslo smlouvy</span>
           <span class="value">${safeContractNumber}</span>
         </div>` : ''}
         <div class="detail-row">
@@ -221,12 +233,12 @@ function buildEmailHtml(params: {
       </div>
 
       <a href="https://smluvnik.cz" class="cta">
-        Zobrazit ve Smluvniku
+        Zobrazit ve Smluvníku
       </a>
     </div>
     <div class="footer">
-      Toto upozorneni bylo odeslano automaticky systemem Smluvnik.<br>
-      Upozorneni bylo nastaveno na ${threshold} dni pred expiraci.
+      Toto upozornění bylo odesláno automaticky systémem Smluvník.<br>
+      Upozornění jsou zasílána 45, 14 a 3 dny před expirací smlouvy.
     </div>
   </div>
 </body>
