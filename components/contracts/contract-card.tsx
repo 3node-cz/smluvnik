@@ -149,6 +149,12 @@ export function ContractCard({ contract, onEdit, onDelete }: ContractCardProps) 
         setUploading(false)
         return
       }
+      const MAX_FILE_SIZE = 15 * 1024 * 1024 // 15 MB
+      if (file.size > MAX_FILE_SIZE) {
+        toast.error('Soubor je příliš velký. Maximální velikost je 15 MB.')
+        setUploading(false)
+        return
+      }
       const path = `${userId}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
       const { error: uploadError } = await supabase.storage.from('contracts').upload(path, file, {
         contentType: file.type,

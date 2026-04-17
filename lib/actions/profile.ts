@@ -49,14 +49,19 @@ export async function deleteAccount() {
     }
   }
 
-  await supabase.from('contracts').delete().eq('user_id', user.id)
-  await supabase.from('profiles').delete().eq('id', user.id)
-
-  // Smazat auth uživatele přes service role — zároveň ukončí všechny sessions
-  // (signOut se nevolá zvlášť, deleteUser session ukončí automaticky)
+  // Smazat service-role klientem tabulky bez RLS (nebo kde user_id není auth.uid sloupec)
   const serviceClient = createServiceClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
+
+  // Smazat všechna uživatelská data
+  await supabase.from('contracts').delete().eq('user_id', user.id)
+  await serviceClient.from('notification_log').delete().eq('user_id', user.id)
+  await serviceClient.from('supplier_notes').delete().eq('user_id', user.id)
+  await serviceClient.from('ai_usage_log').delete().eq('user_id', user.id)
+  await supabase.from('profiles').delete().eq('id', user.id)
+
+  // Smazat auth uživatele — zároveň ukončí všechny sessions
   await serviceClient.auth.admin.deleteUser(user.id)
 }

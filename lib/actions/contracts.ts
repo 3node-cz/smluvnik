@@ -27,13 +27,42 @@ export async function addContract(contractData: Partial<Contract>) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Not authenticated')
 
+  // Server-side contract limit check
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('plan, custom_contract_limit')
+    .eq('id', user.id)
+    .single()
+
+  const plan = profile?.plan ?? 'free'
+  const isFreePlan = plan === 'free'
+
+  if (isFreePlan) {
+    const customLimit = profile?.custom_contract_limit
+    const limit = customLimit ?? 5
+    const { count } = await supabase
+      .from('contracts')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+    if ((count ?? 0) >= limit) {
+      throw new Error(`LIMIT_REACHED:${limit}`)
+    }
+  }
+
   const cleaned = pickAllowed(contractData)
+  const filePath = cleaned.file_path as string | undefined
 
   const { error } = await supabase
     .from('contracts')
     .insert([{ ...cleaned, user_id: user.id }])
 
-  if (error) throw error
+  if (error) {
+    // Rollback: smazat nahraný soubor ze storage, aby nezůstal osiřelý
+    if (filePath) {
+      await supabase.storage.from('contracts').remove([filePath])
+    }
+    throw error
+  }
 }
 
 export async function updateContract(id: string, contractData: Partial<Contract>) {

@@ -5,6 +5,9 @@ import { GoogleAuth } from 'google-auth-library'
 
 const MAX_BASE64_SIZE = 10 * 1024 * 1024 // ~7.5 MB file (base64 overhead)
 const RATE_LIMIT_PER_HOUR = 30
+const VERTEX_TIMEOUT_MS = 55_000 // 55s — pod Vercel limitem funkce
+
+export const maxDuration = 60 // Vercel: max délka serverless funkce v sekundách
 
 const VALID_CATEGORIES = [
   'energie', 'plyn', 'internet', 'tv', 'mobilni_tarif',
@@ -41,11 +44,21 @@ export async function POST(request: NextRequest) {
   }
   const userId = user.id
 
-  // Service role client for ai_usage_log (bypasses RLS)
+  // Service role client for ai_usage_log + app_settings (bypasses RLS)
   const serviceClient = createServiceClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
+
+  // Kontrola feature flagu ai_enabled
+  const { data: aiFlag } = await serviceClient
+    .from('app_settings')
+    .select('value')
+    .eq('key', 'ai_enabled')
+    .single()
+  if (aiFlag?.value === 'false') {
+    return NextResponse.json({ error: 'AI extrakce je momentálně vypnutá.' }, { status: 503 })
+  }
 
   let base64: string, mimeType: string
   try {
@@ -168,10 +181,14 @@ PRO OSTATNÍ KATEGORIE:
 - fixed_fee = null`
 
   try {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), VERTEX_TIMEOUT_MS)
+
     const response = await fetch(
       `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/gemini-2.5-flash:generateContent`,
       {
         method: 'POST',
+        signal: controller.signal,
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${accessToken}`,
@@ -193,6 +210,8 @@ PRO OSTATNÍ KATEGORIE:
         })
       }
     )
+
+    clearTimeout(timeoutId)
 
     if (!response.ok) {
       const err = await response.text()
