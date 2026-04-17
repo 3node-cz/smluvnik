@@ -59,7 +59,8 @@ interface AppSettingsState {
   pro_contracts_limit: string
   ai_enabled: string
   registration_enabled: string
-  resend_api_key?: string
+  resend_configured?: boolean  // true = klíč je uložen; samotný klíč se NENAČÍTÁ do browseru
+  resend_new_key?: string      // jen pro zadání nového klíče
 }
 
 interface ResendStats {
@@ -114,6 +115,35 @@ export function AdminPanel() {
   const [editSaving, setEditSaving] = useState(false)
   const [editSaved, setEditSaved] = useState(false)
   const [aiDays, setAiDays] = useState<string>('7')
+
+  // Hooks musí být před early return (pravidla Reactu)
+  useEffect(() => {
+    if (profile.role === 'admin') loadData()
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const filteredAndSortedMemo = useMemo(() => {
+    let result = [...users]
+    if (filterPlan !== 'all') result = result.filter(u => (u.plan || 'free') === filterPlan)
+    if (search) {
+      const q = search.toLowerCase()
+      result = result.filter(u =>
+        u.email.toLowerCase().includes(q) || (u.full_name || '').toLowerCase().includes(q)
+      )
+    }
+    result.sort((a, b) => {
+      switch (sortBy) {
+        case 'created_at_desc': return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        case 'created_at_asc': return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        case 'contracts_desc': return b.contract_count - a.contract_count
+        case 'contracts_asc': return a.contract_count - b.contract_count
+        case 'storage_desc': return b.storage_used - a.storage_used
+        case 'storage_asc': return a.storage_used - b.storage_used
+        case 'email_asc': return a.email.localeCompare(b.email)
+        default: return 0
+      }
+    })
+    return result
+  }, [users, filterPlan, sortBy, search])
 
   // Guard: if not admin, don't render
   if (profile.role !== 'admin') return null
@@ -186,17 +216,18 @@ export function AdminPanel() {
     if (settingsData) {
       const map: Record<string, string> = {}
       settingsData.forEach((s: { key: string; value: string }) => { map[s.key] = s.value })
-      setSettings(prev => ({ ...prev, ...map }))
-      if (map.resend_api_key) {
+      // Resend klíč se NENAČÍTÁ do stavu — pouze příznak "je nastaven"
+      const resendConfigured = !!map.resend_api_key
+      const { resend_api_key: _ignored, ...safeMap } = map
+      void _ignored
+      setSettings(prev => ({ ...prev, ...safeMap, resend_configured: resendConfigured }))
+      if (resendConfigured) {
         loadResendStats()
       }
     }
 
     setLoading(false)
   }
-
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  useEffect(() => { loadData() }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const openEdit = (user: UserRow) => {
     setEditingUser(user)
@@ -271,30 +302,7 @@ export function AdminPanel() {
     }
   }
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const filteredAndSorted = useMemo(() => {
-    let result = [...users]
-    if (filterPlan !== 'all') result = result.filter(u => (u.plan || 'free') === filterPlan)
-    if (search) {
-      const q = search.toLowerCase()
-      result = result.filter(u =>
-        u.email.toLowerCase().includes(q) || (u.full_name || '').toLowerCase().includes(q)
-      )
-    }
-    result.sort((a, b) => {
-      switch (sortBy) {
-        case 'created_at_desc': return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        case 'created_at_asc': return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-        case 'contracts_desc': return b.contract_count - a.contract_count
-        case 'contracts_asc': return a.contract_count - b.contract_count
-        case 'storage_desc': return b.storage_used - a.storage_used
-        case 'storage_asc': return a.storage_used - b.storage_used
-        case 'email_asc': return a.email.localeCompare(b.email)
-        default: return 0
-      }
-    })
-    return result
-  }, [users, filterPlan, sortBy, search])
+  const filteredAndSorted = filteredAndSortedMemo
 
   // Statistiky
   const totalUsers = users.length
@@ -635,7 +643,7 @@ export function AdminPanel() {
                 )}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">{settings.resend_api_key ? 'Načítám...' : 'API klíč není nastaven v app_settings'}</p>
+              <p className="text-sm text-muted-foreground">{settings.resend_configured ? 'Načítám...' : 'API klíč není nastaven v app_settings'}</p>
             )}
           </CardContent>
         </Card>

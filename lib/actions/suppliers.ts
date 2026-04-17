@@ -7,6 +7,9 @@ export async function addSupplierNote(provider: string, note: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Not authenticated')
 
+  if (!provider.trim() || provider.length > 200) throw new Error('Neplatný název dodavatele.')
+  if (!note.trim() || note.length > 2000) throw new Error('Poznámka musí mít 1–2000 znaků.')
+
   const { error } = await supabase.from('supplier_notes').insert({
     user_id: user.id,
     provider,

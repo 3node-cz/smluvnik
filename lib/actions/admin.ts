@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createServiceClient } from '@supabase/supabase-js'
 
 async function requireAdmin() {
   const supabase = await createClient()
@@ -17,6 +18,23 @@ async function requireAdmin() {
   return supabase
 }
 
+/** Veřejná akce — ověří flag registrací bez auth */
+export async function checkRegistrationEnabled(): Promise<boolean> {
+  const serviceClient = createServiceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+  const { data } = await serviceClient
+    .from('app_settings')
+    .select('value')
+    .eq('key', 'registration_enabled')
+    .single()
+  return data?.value !== 'false'
+}
+
+const VALID_PLANS = ['free', 'pro', 'business'] as const
+const VALID_ROLES = ['user', 'admin'] as const
+
 export async function adminUpdateProfile(userId: string, data: {
   plan?: string
   role?: string
@@ -29,6 +47,14 @@ export async function adminUpdateProfile(userId: string, data: {
   subscription_type?: string | null
   subscription_expires_at?: string | null
 }) {
+  // Allowlist pro plan a role
+  if (data.plan !== undefined && !VALID_PLANS.includes(data.plan as typeof VALID_PLANS[number])) {
+    throw new Error(`Neplatný plán: ${data.plan}`)
+  }
+  if (data.role !== undefined && !VALID_ROLES.includes(data.role as typeof VALID_ROLES[number])) {
+    throw new Error(`Neplatná role: ${data.role}`)
+  }
+
   const supabase = await requireAdmin()
   const { error } = await supabase
     .from('profiles')

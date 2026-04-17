@@ -63,30 +63,35 @@ export function ContractCard({ contract, onEdit, onDelete }: ContractCardProps) 
 
   const loadDocuments = async () => {
     setDocsLoading(true)
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    const { data } = await supabase
-      .from('contract_documents')
-      .select('*')
-      .eq('contract_id', contract.id)
-      .eq('user_id', user?.id ?? '')
-      .order('created_at', { ascending: false })
+    try {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      const { data } = await supabase
+        .from('contract_documents')
+        .select('*')
+        .eq('contract_id', contract.id)
+        .eq('user_id', user?.id ?? '')
+        .order('created_at', { ascending: false })
 
-    const additionalDocs = data || []
+      const additionalDocs = data || []
 
-    if (contract.file_path && contract.file_name) {
-      const originalDoc: ContractDocument = {
-        id: 'original',
-        file_path: contract.file_path,
-        file_name: contract.file_name,
-        file_size: contract.file_size || 0,
-        created_at: contract.created_at,
+      if (contract.file_path && contract.file_name) {
+        const originalDoc: ContractDocument = {
+          id: 'original',
+          file_path: contract.file_path,
+          file_name: contract.file_name,
+          file_size: contract.file_size || 0,
+          created_at: contract.created_at,
+        }
+        setDocuments([...additionalDocs, originalDoc])
+      } else {
+        setDocuments(additionalDocs)
       }
-      setDocuments([...additionalDocs, originalDoc])
-    } else {
-      setDocuments(additionalDocs)
+    } catch {
+      toast.error('Nepodařilo se načíst dokumenty.')
+    } finally {
+      setDocsLoading(false)
     }
-    setDocsLoading(false)
   }
 
   useEffect(() => {
@@ -129,10 +134,15 @@ export function ContractCard({ contract, onEdit, onDelete }: ContractCardProps) 
 
   const confirmDeleteDocument = async () => {
     if (!deleteDocId) return
-    await deleteDocument(deleteDocId)
-    setDocuments(prev => prev.filter(d => d.id !== deleteDocId))
-    setDeleteDocId(null)
-    router.refresh()
+    try {
+      await deleteDocument(deleteDocId)
+      setDocuments(prev => prev.filter(d => d.id !== deleteDocId))
+      router.refresh()
+    } catch {
+      toast.error('Nepodařilo se smazat dokument. Zkuste to znovu.')
+    } finally {
+      setDeleteDocId(null)
+    }
   }
 
   const handleUploadDocument = async (file: File) => {
@@ -149,13 +159,32 @@ export function ContractCard({ contract, onEdit, onDelete }: ContractCardProps) 
         setUploading(false)
         return
       }
-      const MAX_FILE_SIZE = 15 * 1024 * 1024 // 15 MB
+      const MAX_FILE_SIZE = 15 * 1024 * 1024 // 15 MB per soubor
       if (file.size > MAX_FILE_SIZE) {
         toast.error('Soubor je příliš velký. Maximální velikost je 15 MB.')
         setUploading(false)
         return
       }
-      const path = `${userId}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
+      // Kontrola celkového storage limitu pro free plán
+      const { data: profileData } = await supabase.from('profiles').select('plan, custom_storage_mb').eq('id', userId).single()
+      if ((profileData?.plan ?? 'free') === 'free') {
+        const storageLimitMb = profileData?.custom_storage_mb ?? 15
+        const storageLimit = storageLimitMb * 1024 * 1024
+        const { data: allDocs } = await supabase.from('contract_documents').select('file_size').eq('user_id', userId)
+        const { data: allContracts } = await supabase.from('contracts').select('file_size').eq('user_id', userId)
+        const usedBytes = [
+          ...(allDocs ?? []).map((d: { file_size: number }) => d.file_size ?? 0),
+          ...(allContracts ?? []).map((c: { file_size: number }) => c.file_size ?? 0),
+        ].reduce((a, b) => a + b, 0)
+        if (usedBytes + file.size > storageLimit) {
+          const remaining = Math.max(0, storageLimit - usedBytes)
+          toast.error(`Nedostatek místa. Zbývá ${(remaining / 1024 / 1024).toFixed(1)} MB z ${storageLimitMb} MB.`)
+          setUploading(false)
+          return
+        }
+      }
+      const uid = crypto.randomUUID().replace(/-/g, '').slice(0, 16)
+      const path = `${userId}/${Date.now()}_${uid}.${ext}`
       const { error: uploadError } = await supabase.storage.from('contracts').upload(path, file, {
         contentType: file.type,
         upsert: false,

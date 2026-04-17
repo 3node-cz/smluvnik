@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { checkRegistrationEnabled } from '@/lib/actions/admin'
 import { Mail, Lock, User, Eye, EyeOff, ArrowLeft, CheckCircle, Shield } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -131,6 +132,11 @@ export function LoginForm() {
     }
     setLoading(true)
     try {
+      const registrationOpen = await checkRegistrationEnabled()
+      if (!registrationOpen) {
+        setError('Registrace je momentálně pozastavena. Zkuste to prosím později.')
+        return
+      }
       const supabase = createClient()
       const { error } = await supabase.auth.signUp({
         email,

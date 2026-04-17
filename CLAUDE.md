@@ -68,16 +68,20 @@ Auth middleware at `proxy.ts` (Next.js 16 convention, replaces `middleware.ts`).
 
 ### Environment Variables
 ```
-NEXT_PUBLIC_SUPABASE_URL      # Supabase project URL
-NEXT_PUBLIC_SUPABASE_ANON_KEY # Supabase anon key
-SUPABASE_SERVICE_ROLE_KEY     # Server-only, for AI logging
-GOOGLE_AI_API_KEY             # Server-only, Gemini extraction
+NEXT_PUBLIC_SUPABASE_URL               # Supabase project URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY          # Supabase anon key
+SUPABASE_SERVICE_ROLE_KEY              # Server-only, admin operations + AI logging
+GOOGLE_CLOUD_PROJECT                   # GCP project ID pro Vertex AI
+GOOGLE_APPLICATION_CREDENTIALS_JSON   # Service account JSON (inline, pro Vercel)
+VERTEX_LOCATION                        # Volitelný, výchozí europe-west4
+CRON_SECRET                            # Bearer token pro /api/cron/notifications
 ```
 
 ### External Services
-- **Supabase Edge Function** — `send-expiry-notifications` cron for email alerts via Resend
-- **Google Gemini 2.5 Flash** — AI document extraction
-- **Vercel Analytics** — usage tracking
+- **Vercel Cron** — spouští `/api/cron/notifications` každý den v 8:00 UTC (viz vercel.json)
+- **Resend** — odesílání expirací emailů, API klíč uložen v `app_settings.resend_api_key`
+- **Google Vertex AI (europe-west4)** — Gemini 2.5 Flash pro extrakci dat z dokumentů (GDPR)
+- **Vercel Analytics** — usage tracking, podmíněno cookie souhlasem
 
 ## Design Patterns
 

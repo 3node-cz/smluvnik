@@ -171,7 +171,8 @@ export function ContractForm({ open, onOpenChange, initial, onSaved, totalStorag
     const ALLOWED_EXTENSIONS = ['pdf', 'jpg', 'jpeg', 'png', 'webp', 'heic', 'doc', 'docx']
     const ext = selectedFile.name.split('.').pop()?.toLowerCase()
     if (!ext || !ALLOWED_EXTENSIONS.includes(ext)) throw new Error('Nepodporovaný formát souboru')
-    const path = `${userId}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
+    const uid = crypto.randomUUID().replace(/-/g, '').slice(0, 16)
+    const path = `${userId}/${Date.now()}_${uid}.${ext}`
     const { error } = await supabase.storage.from('contracts').upload(path, selectedFile, {
       contentType: selectedFile.type,
       upsert: false,
@@ -183,6 +184,10 @@ export function ContractForm({ open, onOpenChange, initial, onSaved, totalStorag
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!formData.provider?.trim()) return
+    if (formData.valid_from && formData.valid_until && formData.valid_from > formData.valid_until) {
+      toast.error('Datum začátku musí být dříve než datum konce platnosti.')
+      return
+    }
     if (formData.category === 'vlastni' && !formData.custom_category?.trim()) {
       toast.error('Vyplňte název vlastní kategorie.')
       return
@@ -227,7 +232,12 @@ export function ContractForm({ open, onOpenChange, initial, onSaved, totalStorag
       onOpenChange(false)
     } catch (err) {
       console.error(err)
-      toast.error('Chyba při ukládání smlouvy. Zkuste to znovu.')
+      if (err instanceof Error && err.message.startsWith('LIMIT_REACHED')) {
+        const limit = err.message.split(':')[1] ?? '5'
+        toast.error(`Dosáhli jste limitu ${limit} smluv pro bezplatný plán. Přejděte na placený plán.`)
+      } else {
+        toast.error('Chyba při ukládání smlouvy. Zkuste to znovu.')
+      }
     } finally {
       setLoading(false)
     }

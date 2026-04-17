@@ -35,21 +35,32 @@ export async function addContract(contractData: Partial<Contract>) {
     .single()
 
   const plan = profile?.plan ?? 'free'
-  const isFreePlan = plan === 'free'
+  const customLimit = profile?.custom_contract_limit
 
-  if (isFreePlan) {
-    const customLimit = profile?.custom_contract_limit
-    const limit = customLimit ?? 5
-    const { count } = await supabase
-      .from('contracts')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-    if ((count ?? 0) >= limit) {
-      throw new Error(`LIMIT_REACHED:${limit}`)
-    }
+  // Výchozí limity podle plánu
+  const DEFAULT_LIMITS: Record<string, number> = { free: 5, pro: 50, business: 999 }
+  const planLimit = customLimit ?? DEFAULT_LIMITS[plan] ?? 5
+
+  const { count } = await supabase
+    .from('contracts')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', user.id)
+
+  if ((count ?? 0) >= planLimit) {
+    throw new Error(`LIMIT_REACHED:${planLimit}`)
   }
 
   const cleaned = pickAllowed(contractData)
+
+  // Validace notification_email pokud je vyplněn
+  if (cleaned.notification_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(cleaned.notification_email))) {
+    throw new Error('Neplatný formát notifikačního e-mailu.')
+  }
+  // Validace dat
+  if (cleaned.valid_from && cleaned.valid_until && cleaned.valid_from > cleaned.valid_until) {
+    throw new Error('Datum začátku musí být dříve než datum konce.')
+  }
+
   const filePath = cleaned.file_path as string | undefined
 
   const { error } = await supabase
