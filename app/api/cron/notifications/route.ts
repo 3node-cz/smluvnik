@@ -1,3 +1,19 @@
+/**
+ * EXPIRAČNÍ NOTIFIKACE — CRON ENDPOINT
+ *
+ * Na Vercelu se spouští automaticky každý den v 8:00 UTC (viz vercel.json).
+ *
+ * ⚠️  POZOR PRO SPRÁVCE VLASTNÍHO SERVERU (PM2 / VPS):
+ * Na jiném hostingu vercel.json nefunguje — je potřeba nastavit systémový cron ručně.
+ *
+ * Příklad pro crontab (crontab -e):
+ *   0 8 * * * curl -s -X GET https://smluvnik.cz/api/cron/notifications \
+ *     -H "Authorization: Bearer <hodnota CRON_SECRET z .env.local>" \
+ *     >> /var/log/smluvnik-cron.log 2>&1
+ *
+ * Nebo použij cron-job.org (zdarma) — URL + Authorization header výše.
+ */
+
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { CONTRACT_CATEGORIES } from '@/lib/types/database'
