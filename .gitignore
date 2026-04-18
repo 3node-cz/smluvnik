@@ -46,3 +46,4 @@ next-env.d.ts
 
 # screenshots
 .ios-simulator-mcp/
+.claude/settings.local.json
